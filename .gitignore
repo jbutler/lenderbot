@@ -1,2 +1,6 @@
 __pycache__
 rules.json
+*.db
+*.db.bak
+*.db.dat
+*.db.dir
