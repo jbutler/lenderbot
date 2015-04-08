@@ -1,0 +1,100 @@
+{
+   "config":{
+      "iid"       : <Investor ID here>,
+	  "auth"      : <Authorization token here>,
+	  "orderamnt" : 25,
+	  "testmode"  : "true"
+	},
+   "exclusions":[
+      {
+         "key"  : "grade",
+         "op"   : "<",
+         "comp" : "D"
+      },
+      {
+         "key"  : "dti",
+         "op"   : ">",
+         "comp" : 35
+      },
+      {
+         "key"  : "inqLast6Mths",
+         "op"   : ">",
+         "comp" : 2
+      },
+      {
+         "key"  : "homeOwnership",
+         "op"   : "==",
+         "comp" : "OTHER"
+      },
+      {
+         "key"  : "homeOwnership",
+         "op"   : "==",
+         "comp" : "RENT"
+      },
+      {
+         "key"  : "annualInc",
+         "op"   : "<",
+         "comp" : 90000
+      },
+      {
+         "key"  : "purpose",
+         "op"   : "==",
+         "comp" : "medical"
+      },
+      {
+         "key"  : "purpose",
+         "op"   : "==",
+         "comp" : "small_business"
+      },
+      {
+         "key"  : "purpose",
+         "op"   : "==",
+         "comp" : "vacation"
+      },
+      {
+         "key"  : "purpose",
+         "op"   : "==",
+         "comp" : "major_purchase"
+      },
+      {
+         "key"  : "purpose",
+         "op"   : "==",
+         "comp" : "car"
+      },
+      {
+         "key"  : "purpose",
+         "op"   : "==",
+         "comp" : "other"
+      },
+      {
+         "key"  : "mthsSinceLastDelinq",
+         "op"   : "!=",
+         "comp" : "None"
+      },
+      {
+         "key"  : "empLength",
+         "op"   : "<",
+         "comp" : 1
+      },
+      {
+         "key"  : "pubRec",
+         "op"   : ">",
+         "comp" : 0
+      },
+      {
+         "key"  : "revolUtil",
+         "op"   : ">",
+         "comp" : 50
+      },
+      {
+         "key"  : "addrState",
+         "op"   : "==",
+         "comp" : "CA"
+      },
+      {
+         "key"  : "delinq2Yrs",
+         "op"   : "!=",
+         "comp" : 0
+      }
+   ]
+}
