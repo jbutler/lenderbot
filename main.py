@@ -43,10 +43,6 @@ def filter(loan, exclusion_rules):
 		return False
 	return True
 
-def test_add_funds(i, amount):
-	i.add_funds(amount)
-	return
-
 def add_to_db(db_file, loans):
 	db = shelve.open(db_file)
 	for loan in loans:
@@ -66,8 +62,6 @@ def main():
 	db = 'loans.db'
 
 	i = investor(conf['iid'], conf['auth'])
-	test_add_funds(i, 1)
-	return
 
     # Retrieve list of loans and and notes that I current own
 	new_loans = i.get_new_loans(showAll=True)
@@ -77,22 +71,22 @@ def main():
 	new_loans = [ loan for loan in new_loans if filter(loan, exclusion_rules) ]
 	new_loans = [ loan for loan in new_loans if loan['id'] not in my_note_ids ]
 
+	if not len(new_loans):
+		return
 	print("Found %s loans to invest in." % (len(new_loans)))
-		
-	# Bail out if we don't have enough cash to invest
-	available_cash = i.get_cash()
-	#if available_cash < conf['orderamnt']:
-	#	print("Exiting. Not enough cash to invest")
-	#	return
-
-	# Fuck yeah, let's order
-	i.submit_order(new_loans[0 : min( int(available_cash / conf['orderamnt']), len(new_loans))])
 
 	# Save loans away for characterization later
 	add_to_db(db, new_loans)
-	
-	#print("LendingClub POST Test: Attempting to add 1 dollar")
-	#test_add_funds(i, 1)
+
+	# Bail out if we don't have enough cash to invest
+	available_cash = i.get_cash()
+	if available_cash < conf['orderamnt']:
+		print("Exiting. Not enough cash to invest")
+		return
+
+	# Hell yeah, let's order
+	if 'yes' in input('Are you sure you wish to invest in these loans? (yes/no): '):
+		i.submit_order(new_loans[0 : min( int(available_cash / conf['orderamnt']), len(new_loans))])
 
 if __name__ == "__main__":
     main()
