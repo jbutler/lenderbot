@@ -77,7 +77,8 @@ class investor:
 		return [ x['loanId'] for x in json.loads(mynotes_json)['myNotes'] ]
 
 	def submit_order(self, loans):
-		order = json.dumps([ { 'loanId' : loan['id'], 'requestedAmount' : self.investAmt } for loan in loans ])
+		loan_dict = [ { 'loanId' : loan['id'], 'requestedAmount' : self.investAmt } for loan in loans ]
+		order = json.dumps({ "aid" : self.iid, "orders" : loan_dict })
 		self.__execute_post('https://api.lendingclub.com/api/investor/v1/accounts/%s/orders' % (self.iid), payload=order)
 
 	def add_funds(self, amount):

@@ -1,11 +1,14 @@
 {
-   "config":{
+   "config" :
+   {
       "iid"       : 1234567,
-	  "auth"      : lopTCbjBjqmpMeFpSBy5/t77URE=,
-	  "orderamnt" : 25,
-	  "testmode"  : "true"
-	},
-   "exclusions":[
+      "auth"      : lopTCbjBjqmpMeFpSBy5/t77URE=,
+      "orderamnt" : 25,
+      "email"     : "notify_me@email.com"
+      "testmode"  : "true"
+   },
+   "exclusions":
+   [
       {
          "key"  : "grade",
          "op"   : "<",
