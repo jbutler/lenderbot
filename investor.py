@@ -1,7 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import json
 import requests
+import logging
 
 
 class loan(dict):
@@ -46,19 +47,18 @@ class investor:
 		self.iid = iid
 		self.headers = { 'Authorization' : authKey, 'Accept' : 'application/json', 'Content-type' : 'application/json' }
 		self.investAmt = investAmt
+		self.logger = logging.getLogger(__name__)
 
 	def __execute_get(self, url):
 		response = requests.get(url, headers=self.headers)
 		if not response:
-			print("Error occurred during GET: %s" % (url))
-			print("   HTTP response: %s" % (response.status_code))
+			self.logger.error('Error occurred during GET: %s\n  HTTP response: %s' % (url, response.status_code))
 		return response.text
 
 	def __execute_post(self, url, payload=None):
 		response = requests.post(url, data=payload, headers=self.headers)
 		if not response:
-			print("Error occurred during POST: %s" % (url))
-			print("   HTTP response: %s" % (response.status_code))
+			self.logger.error('Error occurred during POST: %s\n  HTTP response: %s' % (url, response.status_code))
 		return response.text
 
 	def get_cash(self):
@@ -84,3 +84,4 @@ class investor:
 	def add_funds(self, amount):
 		payload = json.dumps({ 'amount' : amount, 'transferFrequency' : 'LOAD_NOW' })
 		self.__execute_post('https://api.lendingclub.com/api/investor/v1/accounts/%s/funds/add' % (self.iid), payload=payload)
+

@@ -1,9 +1,12 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
+from datetime import datetime
 import json
+import logging.config
 import operator
-import shelve
 import os
+import shelve
+import smtplib
 
 from investor import investor
 
@@ -15,7 +18,6 @@ def filter(loan, exclusion_rules):
 			p = True
 			comp = rule['comp']
 			if comp == 'None':
-				#print("Setting comp to None")
 				comp = None
 
 			# Catch the case where the key value should be None but it isn't
@@ -27,29 +29,41 @@ def filter(loan, exclusion_rules):
 
 			# Handle normal comparisons
 			if not rule['op'] in operators:
-				print("ERROR: Unknown operator %s" % rule['op'])
+				logger.warn('Unknown operator %s' % (rule['op']))
 				p = False
 			else:
 				op = operators[rule['op']]
 				p = not op(loan[rule['key']], comp)
 
 			if not p:
-				#print("Value (%s) %s %s" % (loan[rule['key']], rule['op'], comp))
+				logger.debug('Value (%s) %s %s' % (loan[rule['key']], rule['op'], comp))
 				return False
 	except:
-		print("ERROR parsing filter:")
-		print("Rule: %s" % (rule))
-		print("Loan: %s" % (loan))
+		logger.error('Error parsing filter:\nRule: %s\nLoan: %s' % (rule, loan), exc_info=True)
 		return False
 	return True
+
+def email_notification(recipient, num_loans, email_body=""):
+	sender = 'auto-invest@domain.com'
+	message = """From: Auto-Invest <%s>
+To: <%s>
+Subject: %s LendingClub Notes Purchased
+
+%s""" % (sender, recipient, num_loans, email_body)
+
+	try:
+		s = smtplib.SMTP('localhost')
+		s.sendmail(sender, recipient, message)
+		logger.info("Notification email sent successfully.")
+	except:
+		logger.warn("Failed to send notification email.")
+	return
 
 def add_to_db(db_file, loans):
 	db = shelve.open(db_file)
 	for loan in loans:
-		if str(loan['id']) in db:
-			print("Loan %s already present in database" % loan['id'])
-		else:
-			print("Adding loan %s to database" % loan['id'])
+		if str(loan['id']) not in db:
+			logger.info("Adding loan %s to database" % loan['id'])
 			db[str(loan['id'])] = loan
 	db.close()
 	return
@@ -72,8 +86,9 @@ def main():
 	new_loans = [ loan for loan in new_loans if loan['id'] not in my_note_ids ]
 
 	if not len(new_loans):
+		logger.info('No new loans found. Exiting')
 		return
-	print("Found %s loans to invest in." % (len(new_loans)))
+	logger.info('Found %s loans to invest in.' % (len(new_loans)))
 
 	# Save loans away for characterization later
 	add_to_db(db, new_loans)
@@ -81,12 +96,22 @@ def main():
 	# Bail out if we don't have enough cash to invest
 	available_cash = i.get_cash()
 	if available_cash < conf['orderamnt']:
-		print("Exiting. Not enough cash to invest")
+		logger.info('Exiting. Not enough cash to invest')
 		return
 
 	# Hell yeah, let's order
-	if 'yes' in input('Are you sure you wish to invest in these loans? (yes/no): '):
-		i.submit_order(new_loans[0 : min( int(available_cash / conf['orderamnt']), len(new_loans))])
+	#if 'yes' in input('Are you sure you wish to invest in these loans? (yes/no): '):
+	num_loans = min( int(available_cash) / conf['orderamnt'], len(new_loans))
+	if i.submit_order(new_loans[0 : num_loans]):
+		email_notification(conf['email'], num_loans, email_body="Purchased %s loans at %s"%(num_loans, datetime.now()))
+
+	return
 
 if __name__ == "__main__":
-    main()
+	# TODO: This is ugly
+	log_config = 'logging.json'
+	logging.config.dictConfig(json.load(open(log_config, 'rt')))
+	logger = logging.getLogger('investor')
+
+	main()
+
