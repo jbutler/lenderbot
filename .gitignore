@@ -1,7 +1,6 @@
 __pycache__
 *.pyc
 rules.json
-logging.json
 *.db
 *.db.bak
 *.db.dat
