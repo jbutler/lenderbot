@@ -2,10 +2,9 @@
    "config" :
    {
       "iid"       : 1234567,
-      "auth"      : lopTCbjBjqmpMeFpSBy5/t77URE=,
+      "auth"      : "lopTCbjBjqmpMeFpSBy5/t77URE=",
       "orderamnt" : 25,
       "email"     : "notify_me@email.com"
-      "testmode"  : "true"
    },
    "exclusions":
    [
