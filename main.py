@@ -8,7 +8,7 @@ import os
 import shelve
 import smtplib
 
-from investor import investor
+import investor
 
 operators = { ">" : operator.gt, ">=" : operator.ge, "<" : operator.lt, "<=" : operator.le, "==" : operator.eq, "!=" : operator.ne }
 
@@ -75,33 +75,35 @@ def main():
 	conf = cfg_data['config']
 	db = 'loans.db'
 
-	i = investor(conf['iid'], conf['auth'])
+	i = investor.investor(conf['iid'], conf['auth'])
 
     # Retrieve list of loans and and notes that I current own
 	new_loans = i.get_new_loans(showAll=True)
 	my_note_ids = i.get_my_note_ids()
 
 	# Filter list
+	logger.info('Applying filters to %s loans.' % (len(new_loans)))
 	new_loans = [ loan for loan in new_loans if filter(loan, exclusion_rules) ]
 	new_loans = [ loan for loan in new_loans if loan['id'] not in my_note_ids ]
 
 	if not len(new_loans):
-		logger.info('No new loans found. Exiting')
+		logger.info('No new loans pass filters. Exiting')
 		return
-	logger.info('Found %s loans to invest in.' % (len(new_loans)))
 
 	# Save loans away for characterization later
+	logger.info('%s loans pass filters. Adding them to database' % (len(new_loans)))
 	add_to_db(db, new_loans)
 
 	# Bail out if we don't have enough cash to invest
 	available_cash = i.get_cash()
 	if available_cash < conf['orderamnt']:
-		logger.info('Exiting. Not enough cash to invest')
+		logger.warning('Exiting. Not enough cash to invest')
 		return
 
 	# Hell yeah, let's order
 	#if 'yes' in input('Are you sure you wish to invest in these loans? (yes/no): '):
 	num_loans = min( int(available_cash) / conf['orderamnt'], len(new_loans))
+	logger.info('Placing order with %s loans.' % (num_loans))
 	if i.submit_order(new_loans[0 : num_loans]):
 		email_notification(conf['email'], num_loans, email_body="Purchased %s loans at %s"%(num_loans, datetime.now()))
 
