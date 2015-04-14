@@ -7,6 +7,7 @@ import operator
 import os
 import shelve
 import smtplib
+import time
 
 import investor
 
@@ -68,6 +69,17 @@ def add_to_db(db_file, loans):
 	db.close()
 	return
 
+def retrieve_and_filter_loans(investor, exclusion_rules):
+    # Retrieve list of loans and and notes I current own
+	new_loans = investor.get_new_loans(showAll=True)
+	my_note_ids = investor.get_my_note_ids()
+
+	# Filter list
+	logger.info('Applying filters to %s loans.' % (len(new_loans)))
+	new_loans = [ loan for loan in new_loans if filter(loan, exclusion_rules) ]
+	new_loans = [ loan for loan in new_loans if loan['id'] not in my_note_ids ]
+	return new_loans
+
 def main():
 	rules = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'rules.json')
 	cfg_data = json.load(open(rules))
@@ -77,35 +89,33 @@ def main():
 
 	i = investor.investor(conf['iid'], conf['auth'])
 
-    # Retrieve list of loans and and notes that I current own
-	new_loans = i.get_new_loans(showAll=True)
-	my_note_ids = i.get_my_note_ids()
+	# We don't know exactly when loans are going to list, so unfortunately we
+	# have to poll. Keep trying for ~5 minutes before giving up. Bail out
+	# early if loans post and we invest in something
+	for _ in range(120):
+		new_loans = retrieve_and_filter_loans(i, exclusion_rules)
+		if not len(new_loans):
+			logger.info('No new loans pass filters. Exiting')
+			time.sleep(1)
+			continue
 
-	# Filter list
-	logger.info('Applying filters to %s loans.' % (len(new_loans)))
-	new_loans = [ loan for loan in new_loans if filter(loan, exclusion_rules) ]
-	new_loans = [ loan for loan in new_loans if loan['id'] not in my_note_ids ]
+		# Save loans away for characterization later
+		logger.info('%s loans pass filters. Adding them to database' % (len(new_loans)))
+		add_to_db(db, new_loans)
 
-	if not len(new_loans):
-		logger.info('No new loans pass filters. Exiting')
-		return
+		# Bail out if we don't have enough cash to invest
+		available_cash = i.get_cash()
+		if available_cash < conf['orderamnt']:
+			logger.warning('Exiting. Not enough cash to invest')
+			return
 
-	# Save loans away for characterization later
-	logger.info('%s loans pass filters. Adding them to database' % (len(new_loans)))
-	add_to_db(db, new_loans)
-
-	# Bail out if we don't have enough cash to invest
-	available_cash = i.get_cash()
-	if available_cash < conf['orderamnt']:
-		logger.warning('Exiting. Not enough cash to invest')
-		return
-
-	# Hell yeah, let's order
-	#if 'yes' in input('Are you sure you wish to invest in these loans? (yes/no): '):
-	num_loans = min( int(available_cash) / conf['orderamnt'], len(new_loans))
-	logger.info('Placing order with %s loans.' % (num_loans))
-	if i.submit_order(new_loans[0 : num_loans]):
-		email_notification(conf['email'], num_loans, email_body="Purchased %s loans at %s"%(num_loans, datetime.now()))
+		# Hell yeah, let's order
+		#if 'yes' in input('Are you sure you wish to invest in these loans? (yes/no): '):
+		num_loans = min( int(available_cash) / conf['orderamnt'], len(new_loans))
+		logger.info('Placing order with %s loans.' % (num_loans))
+		if i.submit_order(new_loans[0 : num_loans]):
+			email_notification(conf['email'], num_loans, email_body="Purchased %s loans at %s"%(num_loans, datetime.now()))
+			return
 
 	return
 
