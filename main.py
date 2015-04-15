@@ -71,7 +71,7 @@ def add_to_db(db_file, loans):
 
 def retrieve_and_filter_loans(investor, exclusion_rules):
     # Retrieve list of loans and and notes I current own
-	new_loans = investor.get_new_loans(showAll=True)
+	new_loans = investor.get_new_loans()
 	my_note_ids = investor.get_my_note_ids()
 
 	# Filter list
