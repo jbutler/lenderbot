@@ -75,7 +75,6 @@ def retrieve_and_filter_loans(investor, exclusion_rules):
 	my_note_ids = investor.get_my_note_ids()
 
 	# Filter list
-	logger.info('Applying filters to %s loans.' % (len(new_loans)))
 	new_loans = [ loan for loan in new_loans if filter(loan, exclusion_rules) ]
 	new_loans = [ loan for loan in new_loans if loan['id'] not in my_note_ids ]
 	return new_loans
@@ -92,15 +91,15 @@ def main():
 	# We don't know exactly when loans are going to list, so unfortunately we
 	# have to poll. Keep trying for ~5 minutes before giving up. Bail out
 	# early if loans post and we invest in something
+	logger.info('Retrieving newly posted loans')
 	for _ in range(120):
 		new_loans = retrieve_and_filter_loans(i, exclusion_rules)
 		if not len(new_loans):
-			logger.info('No new loans pass filters. Exiting')
 			time.sleep(1)
 			continue
 
 		# Save loans away for characterization later
-		logger.info('%s loans pass filters. Adding them to database' % (len(new_loans)))
+		logger.info('%s loans pass filters' % (len(new_loans)))
 		add_to_db(db, new_loans)
 
 		# Bail out if we don't have enough cash to invest
