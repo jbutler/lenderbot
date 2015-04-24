@@ -69,8 +69,13 @@ class investor:
 
 	def get_new_loans(self, showAll=False):
 		listings_json = self.__execute_get('https://api.lendingclub.com/api/investor/v1/loans/listing?showAll=%s' % (showAll))
-		raw_loans = json.loads(listings_json)['loans']
-		return [ loan(raw_loan) for raw_loan in raw_loans ]
+		try:
+			raw_loans = json.loads(listings_json)['loans']
+			return [ loan(raw_loan) for raw_loan in raw_loans ]
+		except:
+			# Key error, most likely
+			self.logger.error('Loan retrieval failed. Response text:\n  -- %s' % (listings_json))
+			return []
 
 	def get_my_note_ids(self):
 		mynotes_json = self.__execute_get('https://api.lendingclub.com/api/investor/v1/accounts/%s/notes' % (self.iid))
@@ -79,9 +84,13 @@ class investor:
 	def submit_order(self, loans):
 		loan_dict = [ { 'loanId' : loan['id'], 'requestedAmount' : self.investAmt } for loan in loans ]
 		order = json.dumps({ "aid" : self.iid, "orders" : loan_dict })
-		self.__execute_post('https://api.lendingclub.com/api/investor/v1/accounts/%s/orders' % (self.iid), payload=order)
+		return self.__execute_post('https://api.lendingclub.com/api/investor/v1/accounts/%s/orders' % (self.iid), payload=order)
 
 	def add_funds(self, amount):
 		payload = json.dumps({ 'amount' : amount, 'transferFrequency' : 'LOAD_NOW' })
-		self.__execute_post('https://api.lendingclub.com/api/investor/v1/accounts/%s/funds/add' % (self.iid), payload=payload)
+		return self.__execute_post('https://api.lendingclub.com/api/investor/v1/accounts/%s/funds/add' % (self.iid), payload=payload)
+
+	def get_pending_transfers(self):
+		xfers = json.loads(self.__execute_get('https://api.lendingclub.com/api/investor/v1/accounts/%s/funds/pending' % (self.iid)))
+		return xfers['transfers']
 

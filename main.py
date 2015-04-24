@@ -55,13 +55,17 @@ Subject: %s LendingClub Notes Purchased
 	try:
 		s = smtplib.SMTP('localhost')
 		s.sendmail(sender, recipient, message)
-		logger.info("Notification email sent successfully.")
+		logger.info('Notification email sent successfully.')
 	except:
-		logger.warn("Failed to send notification email.")
+		logger.warn('Failed to send notification email.')
 	return
 
 def add_to_db(db_file, loans):
-	db = shelve.open(db_file)
+	try:
+		db = shelve.open(db_file)
+	except:
+		logger.error('Failed to open database (%s). It may be corrupt?' % (db_file))
+		return
 	for loan in loans:
 		if str(loan['id']) not in db:
 			logger.info("Adding loan %s to database" % loan['id'])
@@ -92,7 +96,7 @@ def main():
 	# have to poll. Keep trying for ~5 minutes before giving up. Bail out
 	# early if loans post and we invest in something
 	logger.info('Retrieving newly posted loans')
-	for _ in range(120):
+	for _ in range(200):
 		new_loans = retrieve_and_filter_loans(i, exclusion_rules)
 		if not len(new_loans):
 			time.sleep(1)
@@ -104,6 +108,11 @@ def main():
 
 		# Bail out if we don't have enough cash to invest
 		available_cash = i.get_cash()
+		xfers = i.get_pending_transfers()
+		xfer_amt = sum(map(lambda x : x['amount'], xfers))
+		if available_cash + xfer_amt < conf['min_balance']:
+			logger.info('Initiating money transfer to meet minimum balance requirement of $' + str(conf['min_balance']))
+			i.add_funds(conf['orderamnt'])
 		if available_cash < conf['orderamnt']:
 			logger.warning('Exiting. Not enough cash to invest')
 			return
@@ -116,6 +125,7 @@ def main():
 			email_notification(conf['email'], num_loans, email_body="Purchased %s loans at %s"%(num_loans, datetime.now()))
 			return
 
+	logger.info('No new loans to invest in. Exiting.')
 	return
 
 if __name__ == "__main__":

@@ -1,10 +1,11 @@
 {
    "config" :
    {
-      "iid"       : 1234567,
-      "auth"      : "lopTCbjBjqmpMeFpSBy5/t77URE=",
-      "orderamnt" : 25,
-      "email"     : "notify_me@email.com"
+      "iid"         : 1234567,
+      "auth"        : "lopTCbjBjqmpMeFpSBy5/t77URE=",
+      "orderamnt"   : 25,
+      "min_balance" : 50,
+      "email"       : "notify_me@email.com"
    },
    "exclusions":
    [
