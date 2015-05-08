@@ -60,8 +60,6 @@ class investor:
 			# Round up sleep time to the nearest second
 			sleep_time = (delta + datetime.timedelta(milliseconds=999)).seconds
 			time.sleep(sleep_time)
-		else:
-			print('Not sleeping.. its been long enough')
 		return
 
 	def __update_ts(self):
@@ -115,5 +113,9 @@ class investor:
 
 	def get_pending_transfers(self):
 		xfers = json.loads(self.__execute_get('https://api.lendingclub.com/api/investor/v1/accounts/%s/funds/pending' % (self.iid)))
-		return xfers['transfers']
+		if 'transfers' in xfers:
+			return xfers['transfers']
+		else:
+			return []
+
 
