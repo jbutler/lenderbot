@@ -7,7 +7,6 @@ import operator
 import os
 import shelve
 import smtplib
-import time
 
 import investor
 
@@ -99,7 +98,6 @@ def main():
 	for _ in range(200):
 		new_loans = retrieve_and_filter_loans(i, exclusion_rules)
 		if not len(new_loans):
-			time.sleep(1)
 			continue
 
 		# Save loans away for characterization later

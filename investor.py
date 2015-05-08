@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
+import datetime
 import json
 import requests
 import logging
+import time
 
 
 class loan(dict):
@@ -48,15 +50,36 @@ class investor:
 		self.headers = { 'Authorization' : authKey, 'Accept' : 'application/json', 'Content-type' : 'application/json' }
 		self.investAmt = investAmt
 		self.logger = logging.getLogger(__name__)
+		self.time_delay = datetime.timedelta(seconds=1) # We must wait one second between requests
+		self.last_request_ts = datetime.datetime.now()
+
+	def __execute_delay(self):
+		cur_time = datetime.datetime.now()
+		delta = cur_time - self.last_request_ts
+		if delta < self.time_delay:
+			# Round up sleep time to the nearest second
+			sleep_time = (delta + datetime.timedelta(milliseconds=999)).seconds
+			time.sleep(sleep_time)
+		else:
+			print('Not sleeping.. its been long enough')
+		return
+
+	def __update_ts(self):
+		self.last_request_ts = datetime.datetime.now()
+		return
 
 	def __execute_get(self, url):
+		self.__execute_delay()
 		response = requests.get(url, headers=self.headers)
+		self.__update_ts()
 		if not response:
 			self.logger.error('Error occurred during GET: %s\n  HTTP response: %s' % (url, response.status_code))
 		return response.text
 
 	def __execute_post(self, url, payload=None):
+		self.__execute_delay()
 		response = requests.post(url, data=payload, headers=self.headers)
+		self.__update_ts()
 		if not response:
 			self.logger.error('Error occurred during POST: %s\n  HTTP response: %s' % (url, response.status_code))
 		return response.text
