@@ -3,14 +3,29 @@
 from datetime import datetime
 import json
 import logging.config
+import io
 import operator
 import os
 import shelve
 import smtplib
+import sys
+import traceback
 
 import investor
 
-operators = { ">" : operator.gt, ">=" : operator.ge, "<" : operator.lt, "<=" : operator.le, "==" : operator.eq, "!=" : operator.ne }
+operators = { '>' : operator.gt, '>=' : operator.ge, '<' : operator.lt, '<=' : operator.le, '==' : operator.eq, '!=' : operator.ne }
+
+# TODO: Figure out a way to make this not suck
+# The user email address is in the configuration dictionary. Need a good way to get at that
+# from this exception handler
+notification_email = ''
+def global_exc_handler(type, value, tb):
+	# Catch all uncaught exceptions and email the traceback
+	exception = io.StringIO()
+	traceback.print_exception(type, value, tb, file=exception)
+	email_msg = 'Uncaught exception occurred:\n\n' + exception.getvalue()
+	send_email(notification_email, 'Auto-Investor uncaught exception', email_msg)
+	return sys.__excepthook__(type, value, tb)
 
 def filter(loan, exclusion_rules):
 	try:
@@ -43,13 +58,12 @@ def filter(loan, exclusion_rules):
 		return False
 	return True
 
-def email_notification(recipient, num_loans, email_body=""):
+def send_email(recipient, subject, email_body):
 	sender = 'auto-invest@domain.com'
 	message = """From: Auto-Invest <%s>
 To: <%s>
-Subject: %s LendingClub Notes Purchased
-
-%s""" % (sender, recipient, num_loans, email_body)
+Subject: %s
+%s""" % (sender, recipient, subject, email_body)
 
 	try:
 		s = smtplib.SMTP('localhost')
@@ -59,6 +73,9 @@ Subject: %s LendingClub Notes Purchased
 		logger.warn('Failed to send notification email.')
 	return
 
+def email_purchase_notification(recipient, num_loans, email_body=''):
+	return send_email(recipient, str(num_loans) + ' LendingClub Notes Purchased', email_body)
+
 def add_to_db(db_file, loans):
 	try:
 		db = shelve.open(db_file)
@@ -67,7 +84,7 @@ def add_to_db(db_file, loans):
 		return
 	for loan in loans:
 		if str(loan['id']) not in db:
-			logger.info("Adding loan %s to database" % loan['id'])
+			logger.info('Adding loan %s to database' % loan['id'])
 			db[str(loan['id'])] = loan
 	db.close()
 	return
@@ -89,6 +106,12 @@ def main():
 	conf = cfg_data['config']
 	db = 'loans.db'
 
+	# Set up global exception handler - set global containing the users email address
+	global notification_email
+	notification_email = conf['email']
+	sys.excepthook = global_exc_handler
+
+	# Create investor object
 	i = investor.investor(conf['iid'], conf['auth'])
 
 	# We don't know exactly when loans are going to list, so unfortunately we
@@ -120,13 +143,13 @@ def main():
 		num_loans = min( int(available_cash) / conf['orderamnt'], len(new_loans))
 		logger.info('Placing order with %s loans.' % (num_loans))
 		if i.submit_order(new_loans[0 : num_loans]):
-			email_notification(conf['email'], num_loans, email_body="Purchased %s loans at %s"%(num_loans, datetime.now()))
+			email_purchase_notification(conf['email'], num_loans, email_body='Purchased %s loan(s) at %s'%(num_loans, datetime.now()))
 			return
 
 	logger.info('No new loans to invest in. Exiting.')
 	return
 
-if __name__ == "__main__":
+if __name__ == '__main__':
 	# TODO: This is ugly
 	log_config = 'logging.json'
 	logging.config.dictConfig(json.load(open(log_config, 'rt')))
