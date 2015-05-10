@@ -162,5 +162,9 @@ if __name__ == '__main__':
 	logging.config.dictConfig(json.load(open(log_config, 'rt')))
 	logger = logging.getLogger('investor')
 
-	main()
+	try:
+		main()
+	except KeyboardInterrupt:
+		# Don't email if we manually kill the program
+		logger.info('Keyboard interrupt received - killing program')
 
