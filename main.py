@@ -114,6 +114,19 @@ def main():
 	# Create investor object
 	i = investor.investor(conf['iid'], conf['auth'])
 
+	# Retrieve available cash and any pending transfers
+	available_cash = i.get_cash()
+	xfers = i.get_pending_transfers()
+	pending_xfer_amt = sum(map(lambda x : x['amount'], xfers))
+
+	# Transfer additional funds if we are below the minimum cash balance
+	total_funds = available_cash + pending_xfer_amt
+	if total_funds < conf['min_balance']:
+		xfer_amt = ((conf['min_balance'] - total_funds) + (conf['orderamnt'] - 1)) // conf['orderamnt'] * conf['orderamnt']
+		logger.info('Transfering $%d to meet minimum balance requirement of $%d' % (xfer_amt, conf['min_balance']))
+		i.add_funds(xfer_amt)
+		pending_xfer_amt += xfer_amt
+
 	# We don't know exactly when loans are going to list, so unfortunately we
 	# have to poll. Keep trying for ~5 minutes before giving up. Bail out
 	# early if loans post and we invest in something
@@ -128,12 +141,6 @@ def main():
 		add_to_db(db, new_loans)
 
 		# Bail out if we don't have enough cash to invest
-		available_cash = i.get_cash()
-		xfers = i.get_pending_transfers()
-		xfer_amt = sum(map(lambda x : x['amount'], xfers))
-		if available_cash + xfer_amt < conf['min_balance']:
-			logger.info('Initiating money transfer to meet minimum balance requirement of $' + str(conf['min_balance']))
-			i.add_funds(conf['orderamnt'])
 		if available_cash < conf['orderamnt']:
 			logger.warning('Exiting. Not enough cash to invest')
 			return
