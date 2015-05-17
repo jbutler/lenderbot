@@ -6,4 +6,5 @@ rules.json
 *.db.dat
 *.db.dir
 *.log
+*.swp
 
