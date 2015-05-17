@@ -23,7 +23,7 @@
 			"class": "logging.handlers.RotatingFileHandler",
 			"level": "INFO",
 			"formatter": "detailed",
-			"filename": "info.log",
+			"filename": "logs/info.log",
 			"maxBytes": 1048576,
 			"backupCount": 1,
 			"encoding": "utf8"
@@ -33,7 +33,7 @@
 			"class": "logging.handlers.RotatingFileHandler",
 			"level": "ERROR",
 			"formatter": "detailed",
-			"filename": "errors.log",
+			"filename": "logs/errors.log",
 			"maxBytes": 1048576,
 			"backupCount": 1,
 			"encoding": "utf8"

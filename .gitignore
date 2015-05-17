@@ -5,6 +5,5 @@ rules.json
 *.db.bak
 *.db.dat
 *.db.dir
-*.log
 *.swp
 
