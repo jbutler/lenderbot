@@ -64,23 +64,26 @@ class investor:
 		self.time_delay = datetime.timedelta(seconds=1) # We must wait one second between requests
 		self.last_request_ts = datetime.datetime.now()
 
+	def __set_ts(self):
+		self.last_request_ts = datetime.datetime.now()
+		return
+
+	def __get_ts(self):
+		return self.last_request_ts
+
 	def __execute_delay(self):
 		cur_time = datetime.datetime.now()
-		delta = cur_time - self.last_request_ts
+		delta = cur_time - self.__get_ts()
 		if delta < self.time_delay:
 			# Round up sleep time to the nearest second
 			sleep_time = (delta + datetime.timedelta(milliseconds=999)).seconds
 			time.sleep(sleep_time)
 		return
 
-	def __update_ts(self):
-		self.last_request_ts = datetime.datetime.now()
-		return
-
 	def __execute_get(self, url):
 		self.__execute_delay()
 		response = requests.get(url, headers=self.headers)
-		self.__update_ts()
+		self.__set_ts()
 		if not response:
 			self.logger.error('Error occurred during GET: %s\n  HTTP response: %s' % (url, response.status_code))
 		return response.text
