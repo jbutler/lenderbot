@@ -6,7 +6,7 @@ import unittest
 
 class InvestorTest(unittest.TestCase):
 	def test_dummy_test(self):
-		self.assertTrue(True)
+		self.assertTrue(False)
 
 
 if __name__ == '__main__':
