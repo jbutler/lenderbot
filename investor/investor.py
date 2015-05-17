@@ -91,7 +91,7 @@ class investor:
 	def __execute_post(self, url, payload=None):
 		self.__execute_delay()
 		response = requests.post(url, data=payload, headers=self.headers)
-		self.__update_ts()
+		self.__set_ts()
 		if not response:
 			self.logger.error('Error occurred during POST: %s\n  HTTP response: %s' % (url, response.status_code))
 		return response.text
