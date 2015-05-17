@@ -100,7 +100,7 @@ def retrieve_and_filter_loans(investor, exclusion_rules):
 	return new_loans
 
 def main():
-	rules = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'rules.json')
+	rules = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config', 'rules.json')
 	cfg_data = json.load(open(rules))
 	exclusion_rules = cfg_data['exclusions']
 	conf = cfg_data['config']
@@ -161,7 +161,7 @@ def main():
 
 if __name__ == '__main__':
 	# TODO: This is ugly
-	log_config = 'logging.json'
+	log_config = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config', 'logging.json')
 	logging.config.dictConfig(json.load(open(log_config, 'rt')))
 	logger = logging.getLogger('investor')
 
