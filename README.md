@@ -1,6 +1,8 @@
 # auto-investor
 Python library interfacing with LendingClub. Run this as a cronjob to automatically invest in notes that meet your investment criteria.
 
+[![Build Status](https://travis-ci.org/jbutler/auto-investor.svg?branch=master)](https://travis-ci.org/jbutler/auto-investor)
+
 ## Requirements
 * Python 3
 * requests
