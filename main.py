@@ -11,7 +11,7 @@ import smtplib
 import sys
 import traceback
 
-import investor
+import investor.investor as investor
 
 operators = { '>' : operator.gt, '>=' : operator.ge, '<' : operator.lt, '<=' : operator.le, '==' : operator.eq, '!=' : operator.ne }
 
