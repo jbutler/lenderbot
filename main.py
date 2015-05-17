@@ -131,7 +131,7 @@ def main():
 	# have to poll. Keep trying for ~5 minutes before giving up. Bail out
 	# early if loans post and we invest in something
 	logger.info('Retrieving newly posted loans')
-	for _ in range(200):
+	for _ in range(140):
 		new_loans = retrieve_and_filter_loans(i, exclusion_rules)
 		if not len(new_loans):
 			continue
@@ -150,7 +150,10 @@ def main():
 		num_loans = min( int(available_cash) / conf['orderamnt'], len(new_loans))
 		logger.info('Placing order with %s loans.' % (num_loans))
 		if i.submit_order(new_loans[0 : num_loans]):
-			email_purchase_notification(conf['email'], num_loans, email_body='Purchased %s loan(s) at %s'%(num_loans, datetime.now()))
+			email_body = 'Purchased %s loan(s) at %s\n\n' % (num_loans, datetime.now())
+			for loan in new_loans[0 : num_loans]:
+				email_body += '%s\n' % (str(loan))
+			email_purchase_notification(conf['email'], num_loans, email_body=email_body)
 			return
 
 	logger.info('No new loans to invest in. Exiting.')

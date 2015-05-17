@@ -41,6 +41,17 @@ class loan(dict):
 	def set_quality(self, quality):
 		self.quality = quality
 
+	def __repr__(self):
+		# Print some of the more interesting loan details
+		str  = 'Loan ID: %s\n' % (self['id'])
+		str += 'Amount Requested: $%d\n' % (self['loanAmount'])
+		str += 'Loan purpose: %s\n' % (self['purpose'])
+		str += 'Loan grade: %s\n' % (self['subGrade'])
+		str += 'Interest rate: %.2f\n' % (self['intRate'])
+		str += 'Loan length: %d months\n' % (self['term'])
+		str += 'Monthly payment: $%d\n' % (self['installment'])
+		return str
+
 
 class investor:
 	'A simple class to interact with your LendingClub account'
@@ -117,5 +128,4 @@ class investor:
 			return xfers['transfers']
 		else:
 			return []
-
 
