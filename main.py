@@ -100,10 +100,10 @@ def retrieve_and_filter_loans(investor, exclusion_rules):
 	return new_loans
 
 def main():
+	config = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config', 'config.json')
 	rules = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config', 'rules.json')
-	cfg_data = json.load(open(rules))
-	exclusion_rules = cfg_data['exclusions']
-	conf = cfg_data['config']
+	conf = json.load(open(config))
+	exclusion_rules = json.load(open(rules))['exclusions']
 	db = 'loans.db'
 
 	# Set up global exception handler - set global containing the users email address

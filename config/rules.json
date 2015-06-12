@@ -1,12 +1,4 @@
 {
-   "config":
-   {
-      "iid"         : 1695827,
-      "auth"        : "f0+nMqLRDASHqriuZfG47vkFWZo=",
-      "orderamnt"   : 25,
-      "min_balance" : 75,
-      "email"       : "joebutler88@gmail.com"
-   },
    "exclusions":[
       {
          "key"  : "grade",
