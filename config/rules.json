@@ -1,0 +1,133 @@
+{
+   "config":
+   {
+      "iid"         : 1695827,
+      "auth"        : "f0+nMqLRDASHqriuZfG47vkFWZo=",
+      "orderamnt"   : 25,
+      "min_balance" : 75,
+      "email"       : "joebutler88@gmail.com"
+   },
+   "exclusions":[
+      {
+         "key"  : "grade",
+         "op"   : "<",
+         "comp" : "D"
+      },
+      {
+         "key"  : "dti",
+         "op"   : ">",
+         "comp" : 30
+      },
+      {
+         "key"  : "inqLast6Mths",
+         "op"   : ">",
+         "comp" : 2
+      },
+      {
+         "key"  : "homeOwnership",
+         "op"   : "==",
+         "comp" : "OTHER"
+      },
+      {
+         "key"  : "homeOwnership",
+         "op"   : "==",
+         "comp" : "RENT"
+      },
+      {
+         "key"  : "annualInc",
+         "op"   : "<",
+         "comp" : 96000
+      },
+      {
+         "key"  : "annualInc",
+         "op"   : ">",
+         "comp" : 240000
+      },
+      {
+         "key"  : "purpose",
+         "op"   : "==",
+         "comp" : "educational"
+      },
+      {
+         "key"  : "purpose",
+         "op"   : "==",
+         "comp" : "home_improvement"
+      },
+      {
+         "key"  : "purpose",
+         "op"   : "==",
+         "comp" : "major_purchase"
+      },
+      {
+         "key"  : "purpose",
+         "op"   : "==",
+         "comp" : "moving"
+      },
+      {
+         "key"  : "purpose",
+         "op"   : "==",
+         "comp" : "other"
+      },
+      {
+         "key"  : "purpose",
+         "op"   : "==",
+         "comp" : "small_business"
+      },
+      {
+         "key"  : "mthsSinceLastDelinq",
+         "op"   : "!=",
+         "comp" : "None"
+      },
+      {
+         "key"  : "empLength",
+         "op"   : "<",
+         "comp" : 1
+      },
+      {
+         "key"  : "pubRec",
+         "op"   : ">",
+         "comp" : 0
+      },
+      {
+         "key"  : "revolUtil",
+         "op"   : ">",
+         "comp" : 45
+      },
+      {
+         "key"  : "addrState",
+         "op"   : "==",
+         "comp" : "CA"
+      },
+      {
+         "key"  : "delinq2Yrs",
+         "op"   : "!=",
+         "comp" : 0
+      },
+      {
+         "key"  : "collections12MthsExMed",
+         "op"   : "!=",
+         "comp" : 0
+      },
+      {
+         "key"  : "mthsSinceLastDelinq",
+         "op"   : "!=",
+         "comp" : "None"
+      },
+      {
+         "key"  : "totCollAmt",
+         "op"   : "!=",
+         "comp" : 0
+      },
+      {
+         "key"  : "taxLiens",
+         "op"   : "!=",
+         "comp" : 0
+      },
+      {
+         "key"  : "ficoRangeHigh",
+         "op"   : ">",
+         "comp" : 714
+      }
+   ]
+}
+

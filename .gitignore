@@ -1,6 +1,5 @@
 __pycache__
 *.pyc
-rules.json
 *.db
 *.db.bak
 *.db.dat
