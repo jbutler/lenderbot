@@ -51,7 +51,7 @@ def filter(loan, exclusion_rules):
 				p = not op(loan[rule['key']], comp)
 
 			if not p:
-				logger.debug('Value (%s) %s %s' % (loan[rule['key']], rule['op'], comp))
+				logger.debug('%s: %s %s %s' % (rule['key'], loan[rule['key']], rule['op'], comp))
 				return False
 	except:
 		logger.error('Error parsing filter:\nRule: %s\nLoan: %s' % (rule, loan), exc_info=True)
