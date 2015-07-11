@@ -109,7 +109,7 @@ class investor:
 			return [ loan(raw_loan) for raw_loan in raw_loans ]
 		except:
 			# Key error, most likely
-			self.logger.error('Loan retrieval failed. Response text:\n  -- %s' % (listings_json))
+			self.logger.warning('Loan retrieval failed. Response text:\n  -- %s' % (listings_json))
 			return []
 
 	def get_my_note_ids(self):
