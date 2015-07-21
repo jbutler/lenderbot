@@ -116,9 +116,14 @@
          "comp" : 0
       },
       {
-         "key"  : "ficoRangeHigh",
+         "key"  : "ficoRangeLow",
+         "op"   : "<",
+         "comp" : 650
+      },
+      {
+         "key"  : "revolBal",
          "op"   : ">",
-         "comp" : 714
+         "comp" : 40000
       }
    ]
 }
