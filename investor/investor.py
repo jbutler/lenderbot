@@ -6,6 +6,9 @@ import requests
 import logging
 import time
 
+# investor imports
+import investor.loan_filter as loan_filter
+
 
 class loan(dict):
 	'A simple class to represent a LendingClub loan. This is a wrapper implementing comparison methods to allow sorting'
@@ -63,6 +66,8 @@ class investor:
 		self.logger = logging.getLogger(__name__)
 		self.time_delay = datetime.timedelta(seconds=1) # We must wait one second between requests
 		self.last_request_ts = datetime.datetime.now()
+		self.filters = []
+		self.my_note_ids = self.get_my_note_ids()
 
 	def __set_ts(self):
 		self.last_request_ts = datetime.datetime.now()
@@ -96,6 +101,22 @@ class investor:
 			self.logger.error('Error occurred during POST: %s\n  HTTP response: %s' % (url, response.status_code))
 		return response.text
 
+	def __apply_filters(self, loans):
+		# First, filter out loans we already own
+		num_loans = len(loans)
+		loans = [ loan for loan in loans if loan['id'] not in self.my_note_ids ]
+		if num_loans != len(loans):
+			self.logger.info('Filtering out loan(s) already invested in')
+
+		# Second, apply user defined filters
+		for f in self.filters:
+			loans = [ loan for loan in loans if f.apply(loan) ]
+		return loans
+
+	def add_filters(self, filters):
+		for f in filters:
+			self.filters.append(f)
+
 	def get_cash(self):
 		cash = self.__execute_get('https://api.lendingclub.com/api/investor/v1/accounts/%s/availablecash' % (self.iid))
 		if not cash:
@@ -103,14 +124,23 @@ class investor:
 		return json.loads(cash)['availableCash']
 
 	def get_new_loans(self, showAll=False):
-		listings_json = self.__execute_get('https://api.lendingclub.com/api/investor/v1/loans/listing?showAll=%s' % (showAll))
-		try:
-			raw_loans = json.loads(listings_json)['loans']
-			return [ loan(raw_loan) for raw_loan in raw_loans ]
-		except:
-			# Key error, most likely
-			self.logger.warning('Loan retrieval failed. Response text:\n  -- %s' % (listings_json))
-			return []
+		for _ in range(1,140):
+			loans = None
+			listings_json = self.__execute_get('https://api.lendingclub.com/api/investor/v1/loans/listing?showAll=%s' % (showAll))
+			try:
+				raw_loans = json.loads(listings_json)['loans']
+				loans = [ loan(raw_loan) for raw_loan in raw_loans ]
+			except:
+				# Key error, most likely
+				self.logger.warning('Loan retrieval failed. Response text:\n  -- %s' % (listings_json))
+				continue
+			loans = self.__apply_filters(loans)
+			if len(loans):
+				self.logger.info('%d loan(s) pass filters' % len(loans))
+				return loans
+
+		self.logger.info('No loans pass filters.')
+		return []
 
 	def get_my_note_ids(self):
 		mynotes_json = self.__execute_get('https://api.lendingclub.com/api/investor/v1/accounts/%s/notes' % (self.iid))

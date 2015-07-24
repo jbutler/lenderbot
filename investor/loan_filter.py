@@ -4,14 +4,14 @@ import logging
 import operator
 
 
-class filter():
+class loan_filter():
 	'A simple class to represent a LendingClub loan filter.'
 
-	operators = { '>' : operator.gt, '>=' : operator.ge, '<' : operator.lt, '<=' : operator.le, '==' : operator.eq, '!=' : operator.ne }
-
 	def __init__(self, key, op, comp, exclusion=True):
+		operators = { '>' : operator.gt, '>=' : operator.ge, '<' : operator.lt, '<=' : operator.le, '==' : operator.eq, '!=' : operator.ne }
+		self.logger = logging.getLogger(__name__)
 		self.key  = key
-		self.op   = self.operators[op]
+		self.op   = operators[op]
 		self.comp = comp
 		if comp == 'None':
 			self.comp = None
@@ -31,7 +31,7 @@ class filter():
 
 		# Handle normal comparisons
 		return not self.op(loan[self.key], self.comp)
-			
+
 
 	def apply(self, loan):
 		if self.__eval(loan):
@@ -52,12 +52,12 @@ if __name__ == '__main__':
 
 	# Test filters
 	filters = []
-	filters.append( [ 'loan_a', True,  filter('param_a', '>',  100)  ] )
-	filters.append( [ 'loan_a', False, filter('param_b', '!=', None) ] )
-	filters.append( [ 'loan_b', True,  filter('param_c', '<',  0) ] )
-	filters.append( [ 'loan_b', False, filter('param_a', '<=', 100) ] )
-	filters.append( [ 'loan_c', False, filter('param_b', '==', -1) ] )
-	filters.append( [ 'loan_c', True,  filter('param_c', '!=', 'CSCI') ] )
+	filters.append( [ 'loan_a', True,  loan_filter('param_a', '>',  100)  ] )
+	filters.append( [ 'loan_a', False, loan_filter('param_b', '!=', None) ] )
+	filters.append( [ 'loan_b', True,  loan_filter('param_c', '<',  0) ] )
+	filters.append( [ 'loan_b', False, loan_filter('param_a', '<=', 100) ] )
+	filters.append( [ 'loan_c', False, loan_filter('param_b', '==', -1) ] )
+	filters.append( [ 'loan_c', True,  loan_filter('param_c', '!=', 'CSCI') ] )
 
 	# Execute tests
 	fail_count = 0
@@ -69,7 +69,9 @@ if __name__ == '__main__':
 					fail_count += 1
 				#print('filter.apply(%s): %s' % (loan[0], 'Pass' if filter[2].apply(loan[1]) == filter[1] else 'Fail'))
 
-	if fail_count > 0:
+	if fail_count == 0:
+		print('All filter tests passed')
+	else:
 		print('Error: %d test(s) failed' % (fail_count))
 
 	sys.exit(fail_count)
