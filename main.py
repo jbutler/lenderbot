@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import argparse
 from datetime import datetime
 import json
 import logging.config
@@ -66,6 +67,13 @@ def init_filters(investor, exclusion_rules):
 	investor.add_filters(filters)
 
 def main():
+	# Parse arguments to determine if we're in test mode or production mode
+	parser = argparse.ArgumentParser(description='Autonomous LendingClub account management.')
+	parser.add_argument('-p', '--productionMode', action='store_true', help='Enter production mode. Required to invest or transfer funds.')
+	args = parser.parse_args()
+	if args.productionMode:
+		logger.warning('Entering production mode. Auto-investor may invest in loans or transfer money into your LendingClub account according to your configuration.')
+
 	config = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config', 'config.json')
 	rules = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config', 'rules.json')
 	conf = json.load(open(config))
@@ -78,7 +86,7 @@ def main():
 	sys.excepthook = global_exc_handler
 
 	# Create investor object
-	i = investor.investor(conf['iid'], conf['auth'])
+	i = investor.investor(conf['iid'], conf['auth'], productionMode=args.productionMode)
 
 	# Initialize filters
 	init_filters(i, exclusion_rules)

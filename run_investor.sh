@@ -4,7 +4,7 @@
 # Use this for your cron jobs if you require a virtual environment
 #
 # Example:
-# ./run_investor.sh /home/user/virtual_env main.py
+# ./run_investor.sh /home/user/virtual_env main.py --productionMode
 #
 
 cd `dirname $0`

@@ -59,10 +59,11 @@ class loan(dict):
 class investor:
 	'A simple class to interact with your LendingClub account'
 
-	def __init__(self, iid, authKey, investAmt=25):
+	def __init__(self, iid, authKey, investAmt=25, productionMode=False):
 		self.iid = iid
 		self.headers = { 'Authorization' : authKey, 'Accept' : 'application/json', 'Content-type' : 'application/json' }
 		self.investAmt = investAmt
+		self.productionMode = productionMode
 		self.logger = logging.getLogger(__name__)
 		self.time_delay = datetime.timedelta(seconds=1) # We must wait one second between requests
 		self.last_request_ts = datetime.datetime.now()
@@ -147,13 +148,21 @@ class investor:
 		return [ x['loanId'] for x in json.loads(mynotes_json)['myNotes'] ]
 
 	def submit_order(self, loans):
-		loan_dict = [ { 'loanId' : loan['id'], 'requestedAmount' : self.investAmt } for loan in loans ]
-		order = json.dumps({ "aid" : self.iid, "orders" : loan_dict })
-		return self.__execute_post('https://api.lendingclub.com/api/investor/v1/accounts/%s/orders' % (self.iid), payload=order)
+		if self.productionMode:
+			loan_dict = [ { 'loanId' : loan['id'], 'requestedAmount' : self.investAmt } for loan in loans ]
+			order = json.dumps({ "aid" : self.iid, "orders" : loan_dict })
+			return self.__execute_post('https://api.lendingclub.com/api/investor/v1/accounts/%s/orders' % (self.iid), payload=order)
+		else:
+			self.logger.info('Running in test mode. Skipping loan order')
+			return None
 
 	def add_funds(self, amount):
-		payload = json.dumps({ 'amount' : amount, 'transferFrequency' : 'LOAD_NOW' })
-		return self.__execute_post('https://api.lendingclub.com/api/investor/v1/accounts/%s/funds/add' % (self.iid), payload=payload)
+		if self.productionMode:
+			payload = json.dumps({ 'amount' : amount, 'transferFrequency' : 'LOAD_NOW' })
+			return self.__execute_post('https://api.lendingclub.com/api/investor/v1/accounts/%s/funds/add' % (self.iid), payload=payload)
+		else:
+			self.logger.info('Running in test mode. Skipping money transfer.')
+			return None
 
 	def get_pending_transfers(self):
 		xfers = json.loads(self.__execute_get('https://api.lendingclub.com/api/investor/v1/accounts/%s/funds/pending' % (self.iid)))
