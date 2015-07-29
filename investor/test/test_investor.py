@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
 
-import investor
-import unittest
+import sys
 
+sys.path.insert(0, '.')
+sys.path.insert(0, '../')
+sys.path.insert(0, '../../')
+
+from investor import investor
+import unittest
 
 class InvestorTest(unittest.TestCase):
 	def test_dummy_test(self):

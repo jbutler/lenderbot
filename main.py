@@ -12,8 +12,8 @@ import smtplib
 import sys
 import traceback
 
-import investor.investor as investor
-import investor.loan_filter as loan_filter
+from investor import investor
+from investor import loan_filter
 
 
 # TODO: Figure out a way to make this not suck
