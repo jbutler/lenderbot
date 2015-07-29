@@ -7,7 +7,7 @@ import logging
 import time
 
 # investor imports
-from investor import loan_filter
+from investor import LoanFilter
 
 
 class loan(dict):

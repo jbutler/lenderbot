@@ -13,7 +13,7 @@ import sys
 import traceback
 
 from investor import investor
-from investor import loan_filter
+from investor import LoanFilter
 
 
 # TODO: Figure out a way to make this not suck
@@ -63,7 +63,7 @@ def init_filters(investor, exclusion_rules):
 	# For each rule, create a filter object and add it to the investor
 	filters = []
 	for rule in exclusion_rules:
-		filters.append( loan_filter.loan_filter(rule['key'], rule['op'], rule['comp']) )
+		filters.append( LoanFilter.ExclusionFilter(rule['key'], rule['op'], rule['comp']) )
 	investor.add_filters(filters)
 
 def main():
