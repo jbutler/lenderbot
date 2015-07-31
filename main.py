@@ -74,16 +74,18 @@ def main():
 	if args.productionMode:
 		logger.warning('Entering production mode. Auto-investor may invest in loans or transfer money into your LendingClub account according to your configuration.')
 
+	# Retrieve configuration so we can set up exception handler
 	config = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config', 'config.json')
-	rules = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config', 'rules.json')
 	conf = json.load(open(config))
-	exclusion_rules = json.load(open(rules))['exclusions']
-	db = 'loans.db'
 
-	# Set up global exception handler - set global containing the users email address
 	global notification_email
 	notification_email = conf['email']
 	sys.excepthook = global_exc_handler
+
+	# Now that exceptions will be emailed, parse loan filters
+	rules = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config', 'rules.json')
+	exclusion_rules = json.load(open(rules))['exclusions']
+	db = 'loans.db'
 
 	# Create investor object
 	i = investor.investor(conf['iid'], conf['auth'], productionMode=args.productionMode)

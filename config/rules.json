@@ -54,6 +54,7 @@
          "key"  : "purpose",
          "op"   : "==",
          "comp" : "vacation"
+      },
       {
          "key"  : "mthsSinceLastDelinq",
          "op"   : "!=",
