@@ -28,27 +28,12 @@
       {
          "key"  : "annualInc",
          "op"   : "<",
-         "comp" : 96000
+         "comp" : 90000
       },
       {
          "key"  : "annualInc",
          "op"   : ">",
-         "comp" : 240000
-      },
-      {
-         "key"  : "purpose",
-         "op"   : "==",
-         "comp" : "educational"
-      },
-      {
-         "key"  : "purpose",
-         "op"   : "==",
-         "comp" : "home_improvement"
-      },
-      {
-         "key"  : "purpose",
-         "op"   : "==",
-         "comp" : "major_purchase"
+         "comp" : 180000
       },
       {
          "key"  : "purpose",
@@ -66,24 +51,18 @@
          "comp" : "small_business"
       },
       {
+         "key"  : "purpose",
+         "op"   : "==",
+         "comp" : "vacation"
+      {
          "key"  : "mthsSinceLastDelinq",
          "op"   : "!=",
          "comp" : "None"
       },
       {
-         "key"  : "empLength",
-         "op"   : "<",
-         "comp" : 1
-      },
-      {
          "key"  : "pubRec",
          "op"   : ">",
          "comp" : 0
-      },
-      {
-         "key"  : "revolUtil",
-         "op"   : ">",
-         "comp" : 45
       },
       {
          "key"  : "addrState",
