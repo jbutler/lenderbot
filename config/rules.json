@@ -1,109 +1,69 @@
 {
+   "basic":[
+   ],
    "exclusions":[
       {
-         "key"  : "grade",
-         "op"   : "<",
-         "comp" : "D"
+         "filter"  : "{grade} < D"
       },
       {
-         "key"  : "dti",
-         "op"   : ">",
-         "comp" : 30
+         "filter"  : "{dti} > 30"
       },
       {
-         "key"  : "inqLast6Mths",
-         "op"   : ">",
-         "comp" : 2
+         "filter"  : "{inqLast6Mths} > 2"
       },
       {
-         "key"  : "homeOwnership",
-         "op"   : "==",
-         "comp" : "OTHER"
+         "filter"  : "{homeOwnership} == OTHER"
       },
       {
-         "key"  : "homeOwnership",
-         "op"   : "==",
-         "comp" : "RENT"
+         "filter"  : "{homeOwnership} == RENT"
       },
       {
-         "key"  : "annualInc",
-         "op"   : "<",
-         "comp" : 90000
+         "filter"  : "{annualInc} < 90000"
       },
       {
-         "key"  : "annualInc",
-         "op"   : ">",
-         "comp" : 180000
+         "filter"  : "{annualInc} > 180000"
       },
       {
-         "key"  : "purpose",
-         "op"   : "==",
-         "comp" : "moving"
+         "filter"  : "{purpose} == moving"
       },
       {
-         "key"  : "purpose",
-         "op"   : "==",
-         "comp" : "other"
+         "filter"  : "{purpose} == other"
       },
       {
-         "key"  : "purpose",
-         "op"   : "==",
-         "comp" : "small_business"
+         "filter"  : "{purpose} == small_business"
       },
       {
-         "key"  : "purpose",
-         "op"   : "==",
-         "comp" : "vacation"
+         "filter"  : "{purpose} == vacation"
       },
       {
-         "key"  : "mthsSinceLastDelinq",
-         "op"   : "!=",
-         "comp" : "None"
+         "filter"  : "{mthsSinceLastDelinq} != None"
       },
       {
-         "key"  : "pubRec",
-         "op"   : ">",
-         "comp" : 0
+         "filter"  : "{pubRec} > 0"
       },
       {
-         "key"  : "addrState",
-         "op"   : "==",
-         "comp" : "CA"
+         "filter"  : "{addrState} == CA"
       },
       {
-         "key"  : "delinq2Yrs",
-         "op"   : "!=",
-         "comp" : 0
+         "filter"  : "{delinq2Yrs} != 0"
       },
       {
-         "key"  : "collections12MthsExMed",
-         "op"   : "!=",
-         "comp" : 0
+         "filter"  : "{collections12MthsExMed} != 0"
       },
       {
-         "key"  : "mthsSinceLastDelinq",
-         "op"   : "!=",
-         "comp" : "None"
+         "filter"  : "{mthsSinceLastDelinq} != None"
       },
       {
-         "key"  : "totCollAmt",
-         "op"   : "!=",
-         "comp" : 0
+         "filter"  : "{totCollAmt} != 0"
       },
       {
-         "key"  : "taxLiens",
-         "op"   : "!=",
-         "comp" : 0
+         "filter"  : "{taxLiens} != 0"
       },
       {
-         "key"  : "ficoRangeLow",
-         "op"   : "<",
-         "comp" : 650
+         "filter"  : "{ficoRangeLow} < 650"
       },
       {
-         "key"  : "revolBal",
-         "op"   : ">",
-         "comp" : 40000
+         "filter"  : "{revolBal} > 40000"
       }
    ]
 }

@@ -5,6 +5,7 @@ Python library interfacing with LendingClub. Run this as a cronjob to automatica
 
 ## Requirements
 * Python 3
+* pyparsing
 * requests
 
 ## Configuration
@@ -19,6 +20,28 @@ There are five fields of interest in the account configuration json file (config
 * email - Email address to send purchase notification to
 
 ### Filters
-Filters are defined in the "exclusions" section of rules.json. Filters are defined as a key, an operator, and a comparison value. Loans are discarded when they PASS the filter. In other words, you add failure conditions.
+This is where `auto-investor` shines. It includes a parser which allows you to write arbitrarily complex filters using multiple loan keys and operators. The available loan keys are defined as part of the LendingClub API. You can find these on the developer section of their webpage.
 
-Take a look at rules_template.json for an idea of how to write up filters.
+The filter parser supports (in)equalities as well as basic math functions. The return value of a filter must be a boolean!
+
+Available operators: `+, -, *, /, %, >, >=, <, <=, ==, !=`
+
+#### Filter Syntax
+It's easiest to illustrate the syntax with some examples. We'll start with a basic one and go from there.
+
+##### Basic Example
+`{term} == 36`
+
+This one is pretty self explanatory, but illustrates how to perform key lookups. `{term}` represents the loan term of whatever loan this filter is applied to. It is replaced at runtime with the appropriate value (only 36 and 60 month loans are available on LendingClub). This filter will restrict your investments to 36 month loans. All others will be discarded.
+
+##### More Complicated Example
+`{annualInc} * 0.3 > {loanAmount}`
+
+This filter looks at the borrowers income to decide if the loan amount is appropriate. Specifically, the loan amount must not exceed 30% of their annual income.
+
+#### Filter Types
+There are two types of filters available for use. The above examples are `BasicFilters`. However, it may make more logical sense to define a filter such that loans are discarded when they PASS a filter instead of when they FAIL. These filters are defined as `ExclusionFilters`. While `ExclusionFilters` do not add any flexibility, they're there for you to use. For example, you may find it more intuitive to toss out all loans originating from CA and NJ as `{addrState} == CA` and `{addrState} == NJ` instead of using a `BasicFilter` and saying `{addrState} != CA` and `{addrState] != NJ`. Tomato, tomato. Wait...
+
+#### Filter format
+Now that you're ready to come up with all your badass filters, take a look at rules_template.json for the format.
+

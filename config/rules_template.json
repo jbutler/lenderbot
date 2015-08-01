@@ -1,33 +1,16 @@
 {
-   "config" :
-   {
-      "iid"         : 1234567,
-      "auth"        : "lopTCbjBjqmpMeFpSBy5/t77URE=",
-      "orderamnt"   : 25,
-      "min_balance" : 50,
-      "email"       : "notify_me@email.com"
-   },
-   "exclusions":
-   [
-      {
-         "key"  : "grade",
-         "op"   : "<",
-         "comp" : "D"
-      },
-      {
-         "key"  : "dti",
-         "op"   : ">=",
-         "comp" : 35
-      },
-      {
-         "key"  : "homeOwnership",
-         "op"   : "==",
-         "comp" : "OTHER"
-      },
-      {
-         "key"  : "mthsSinceLastDelinq",
-         "op"   : "!=",
-         "comp" : "None"
-      }
-   ]
+  "basic" : [
+    {
+      "filter" : "{term} == 36"
+    },
+    {
+      "filter" : "{annualInc} * 0.3 > {loanAmount}"
+    }
+  ],
+  "exclusion" : [
+    {
+      "filter" : "{addrState} == CA"
+    }
+  ]
 }
+

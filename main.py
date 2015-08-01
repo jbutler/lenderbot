@@ -59,12 +59,18 @@ def add_to_db(db_file, loans):
 	db.close()
 	return
 
-def init_filters(investor, exclusion_rules):
+def init_filters(investor, filters):
 	# For each rule, create a filter object and add it to the investor
-	filters = []
-	for rule in exclusion_rules:
-		filters.append( LoanFilter.ExclusionFilter(rule['key'], rule['op'], rule['comp']) )
-	investor.add_filters(filters)
+	filter_objs = []
+	if 'basic' in filters:
+		logger.info('Adding %s basic filter(s)' % (len(filters['basic'])))
+		for rule in filters['basic']:
+			filter_objs.append( LoanFilter.BasicFilter(rule['filter'] ) )
+	if 'exclusions' in filters:
+		logger.info('Adding %s exclusion filter(s)' % (len(filters['exclusions'])))
+		for rule in filters['exclusions']:
+			filter_objs.append( LoanFilter.ExclusionFilter(rule['filter'] ) )
+	investor.add_filters(filter_objs)
 
 def main():
 	# Parse arguments to determine if we're in test mode or production mode
@@ -84,14 +90,14 @@ def main():
 
 	# Now that exceptions will be emailed, parse loan filters
 	rules = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config', 'rules.json')
-	exclusion_rules = json.load(open(rules))['exclusions']
+	filters = json.load(open(rules))
 	db = 'loans.db'
 
 	# Create investor object
 	i = investor.investor(conf['iid'], conf['auth'], productionMode=args.productionMode)
 
 	# Initialize filters
-	init_filters(i, exclusion_rules)
+	init_filters(i, filters)
 
 	# Retrieve available cash and any pending transfers
 	available_cash = i.get_cash()
