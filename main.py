@@ -130,7 +130,7 @@ def main():
 
 	# Hell yeah, let's order
 	#if 'yes' in input('Are you sure you wish to invest in these loans? (yes/no): '):
-	num_loans = min( int(available_cash) / conf['orderamnt'], len(new_loans))
+	num_loans = int(min( int(available_cash) / conf['orderamnt'], len(new_loans)))
 	logger.info('Placing order with %s loans.' % (num_loans))
 	if i.submit_order(new_loans[0 : num_loans]):
 		email_body = 'Purchased %s loan(s) at %s\n\n' % (num_loans, datetime.now())
