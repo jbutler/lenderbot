@@ -6,6 +6,7 @@ python:
 
 install:
     - "pip install requests"
+    - "pip install pyparsing"
 
 script:
     - ./investor/test/test_investor.py
