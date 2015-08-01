@@ -42,6 +42,7 @@ class BasicFilter(LoanFilter):
 		# Replace lookups with the actual loan value
 		# Lookups are the loan key inside braces, i.e. the key 'loanTerm' would be encoded as {loanTerm}
 		replacedFilterStr = re.sub('{[A-Za-z0-9]+}', lambda match : str(loan[match.group(0)[1:-1]]), self.filterStr)
+		self.logger.debug('Transformed filter: %s -> %s' % (self.filterStr, replacedFilterStr))
 		return LoanFilter.LoanFilterParser.eval(replacedFilterStr)
 
 class ExclusionFilter(BasicFilter):

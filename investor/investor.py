@@ -114,9 +114,26 @@ class investor:
 			loans = [ loan for loan in loans if f.apply(loan) ]
 		return loans
 
+	def __get_loans(self, showAll=False):
+		loans = []
+		listings_json = self.__execute_get('https://api.lendingclub.com/api/investor/v1/loans/listing?showAll=%s' % (showAll))
+		try:
+			raw_loans = json.loads(listings_json)['loans']
+			loans = [ loan(raw_loan) for raw_loan in raw_loans ]
+		except:
+			# Key error, most likely
+			self.logger.warning('Loan retrieval failed. Response text:\n  -- %s' % (listings_json))
+		return loans
+
 	def add_filters(self, filters):
 		for f in filters:
 			self.filters.append(f)
+
+	def test_filters(self):
+		loans = self.__get_loans(showAll=True)
+		for f in self.filters:
+			for l in loans:
+				f.apply(l)
 
 	def get_cash(self):
 		cash = self.__execute_get('https://api.lendingclub.com/api/investor/v1/accounts/%s/availablecash' % (self.iid))
@@ -126,15 +143,7 @@ class investor:
 
 	def get_new_loans(self, showAll=False):
 		for _ in range(1,140):
-			loans = None
-			listings_json = self.__execute_get('https://api.lendingclub.com/api/investor/v1/loans/listing?showAll=%s' % (showAll))
-			try:
-				raw_loans = json.loads(listings_json)['loans']
-				loans = [ loan(raw_loan) for raw_loan in raw_loans ]
-			except:
-				# Key error, most likely
-				self.logger.warning('Loan retrieval failed. Response text:\n  -- %s' % (listings_json))
-				continue
+			loans = self.__get_loans(showAll)
 			loans = self.__apply_filters(loans)
 			if len(loans):
 				self.logger.info('%d loan(s) pass filters' % len(loans))

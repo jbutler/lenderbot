@@ -76,9 +76,12 @@ def main():
 	# Parse arguments to determine if we're in test mode or production mode
 	parser = argparse.ArgumentParser(description='Autonomous LendingClub account management.')
 	parser.add_argument('-p', '--productionMode', action='store_true', help='Enter production mode. Required to invest or transfer funds.')
+	parser.add_argument('-t', '--testFilters', action='store_true', help='Test loan filters by applying them to all loans currently listed. Exit once complete.')
 	args = parser.parse_args()
 	if args.productionMode:
 		logger.warning('Entering production mode. Auto-investor may invest in loans or transfer money into your LendingClub account according to your configuration.')
+	if args.testFilters:
+		logger.info('Entering filter test mode.')
 
 	# Retrieve configuration so we can set up exception handler
 	config = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config', 'config.json')
@@ -98,6 +101,12 @@ def main():
 
 	# Initialize filters
 	init_filters(i, filters)
+
+	# Conditionally verify filters
+	if args.testFilters:
+		i.test_filters()
+		logger.info('Filter test complete.')
+		return
 
 	# Retrieve available cash and any pending transfers
 	available_cash = i.get_cash()
