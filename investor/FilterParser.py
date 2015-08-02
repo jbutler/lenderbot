@@ -124,7 +124,7 @@ class Arith():
              | Combine(Word(nums) + "." + Word(nums))
              )
 
-    variable = Word(alphas)
+    variable = Word(alphas+'_')
     operand = real | integer | variable
 
     signop = oneOf('+ -')
