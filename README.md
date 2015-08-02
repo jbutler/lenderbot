@@ -1,5 +1,5 @@
 # auto-investor
-Python library interfacing with LendingClub. Run this as a cronjob to automatically invest in notes that meet your investment criteria.
+Don't waste your time managing your LendingClub account. Set up a set of filters and let `auto-investor` put your spare cash to work.
 
 [![Build Status](https://travis-ci.org/jbutler/auto-investor.svg?branch=master)](https://travis-ci.org/jbutler/auto-investor)
 
@@ -7,6 +7,11 @@ Python library interfacing with LendingClub. Run this as a cronjob to automatica
 * Python 3
 * pyparsing
 * requests
+
+## Command Line Options
+Run `python main.py --help` for the most current list of command line options. Currently there are two supported options.
+* `-p`, `--productionMode`: This is a required option to do anything interesting. `auto-investor` will not transfer money into your account or invest in loans without it.
+* `-t`, `--testFilters`: This is a special mode that will retrieve the currently listed loans and apply each filter to give you confidence that they are well formed. It is recommended to run this after updating your loan filters. No notes will be purchased.
 
 ## Configuration
 Account configuration and lending criteria are two pieces that you'll need/want to tweak. There are separate config files for each.
