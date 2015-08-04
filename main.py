@@ -12,7 +12,7 @@ import smtplib
 import sys
 import traceback
 
-from investor import investor
+from investor import Investor
 from investor import LoanFilter
 
 
@@ -97,7 +97,7 @@ def main():
 	db = 'loans.db'
 
 	# Create investor object
-	i = investor.investor(conf['iid'], conf['auth'], productionMode=args.productionMode)
+	i = Investor.Investor(conf['iid'], conf['auth'], productionMode=args.productionMode)
 
 	# Initialize filters
 	init_filters(i, filters)
