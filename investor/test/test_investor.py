@@ -6,7 +6,7 @@ sys.path.insert(0, '.')
 sys.path.insert(0, '../')
 sys.path.insert(0, '../../')
 
-from investor import investor
+from investor import Investor
 import unittest
 
 class InvestorTest(unittest.TestCase):
