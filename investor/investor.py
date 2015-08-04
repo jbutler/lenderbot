@@ -62,13 +62,14 @@ class investor:
 	def __init__(self, iid, authKey, investAmt=25, productionMode=False):
 		self.iid = iid
 		self.headers = { 'Authorization' : authKey, 'Accept' : 'application/json', 'Content-type' : 'application/json' }
+		self.endpoint = 'https://api.lendingclub.com/api/investor/v1/'
 		self.investAmt = investAmt
 		self.productionMode = productionMode
 		self.logger = logging.getLogger(__name__)
 		self.time_delay = datetime.timedelta(seconds=1) # We must wait one second between requests
-		self.last_request_ts = datetime.datetime.now()
+		self.last_request_ts = datetime.datetime.min # No requests have been made yet
 		self.filters = []
-		self.my_note_ids = self.get_my_note_ids()
+		self.my_note_ids = [ x['loanId'] for x in self.get_my_note_ids() ]
 
 	def __set_ts(self):
 		self.last_request_ts = datetime.datetime.now()
@@ -88,7 +89,7 @@ class investor:
 
 	def __execute_get(self, url):
 		self.__execute_delay()
-		response = requests.get(url, headers=self.headers)
+		response = requests.get(self.endpoint + url, headers=self.headers)
 		self.__set_ts()
 		if not response:
 			self.logger.error('Error occurred during GET: %s\n  HTTP response: %s' % (url, response.status_code))
@@ -96,7 +97,7 @@ class investor:
 
 	def __execute_post(self, url, payload=None):
 		self.__execute_delay()
-		response = requests.post(url, data=payload, headers=self.headers)
+		response = requests.post(self.endpoint + url, data=payload, headers=self.headers)
 		self.__set_ts()
 		if not response:
 			self.logger.error('Error occurred during POST: %s\n  HTTP response: %s' % (url, response.status_code))
@@ -116,7 +117,7 @@ class investor:
 
 	def __get_loans(self, showAll=False):
 		loans = []
-		listings_json = self.__execute_get('https://api.lendingclub.com/api/investor/v1/loans/listing?showAll=%s' % (showAll))
+		listings_json = self.__execute_get('loans/listing?showAll=%s' % (showAll))
 		try:
 			raw_loans = json.loads(listings_json)['loans']
 			loans = [ loan(raw_loan) for raw_loan in raw_loans ]
@@ -136,7 +137,7 @@ class investor:
 				f.apply(l)
 
 	def get_cash(self):
-		cash = self.__execute_get('https://api.lendingclub.com/api/investor/v1/accounts/%s/availablecash' % (self.iid))
+		cash = self.__execute_get('accounts/%s/availablecash' % (self.iid))
 		if not cash:
 			return 0
 		return json.loads(cash)['availableCash']
@@ -152,15 +153,15 @@ class investor:
 		self.logger.info('No loans pass filters.')
 		return []
 
-	def get_my_note_ids(self):
-		mynotes_json = self.__execute_get('https://api.lendingclub.com/api/investor/v1/accounts/%s/notes' % (self.iid))
-		return [ x['loanId'] for x in json.loads(mynotes_json)['myNotes'] ]
+	def get_notes_owned(self):
+		mynotes_json = self.__execute_get('accounts/%s/notes' % (self.iid))
+		return [ loan(raw_loan) for raw_loan in json.loads(mynotes_json)['myNotes'] ]
 
 	def submit_order(self, loans):
 		if self.productionMode:
 			loan_dict = [ { 'loanId' : loan['id'], 'requestedAmount' : self.investAmt } for loan in loans ]
 			order = json.dumps({ "aid" : self.iid, "orders" : loan_dict })
-			return self.__execute_post('https://api.lendingclub.com/api/investor/v1/accounts/%s/orders' % (self.iid), payload=order)
+			return self.__execute_post('accounts/%s/orders' % (self.iid), payload=order)
 		else:
 			self.logger.info('Running in test mode. Skipping loan order')
 			return None
@@ -168,13 +169,13 @@ class investor:
 	def add_funds(self, amount):
 		if self.productionMode:
 			payload = json.dumps({ 'amount' : amount, 'transferFrequency' : 'LOAD_NOW' })
-			return self.__execute_post('https://api.lendingclub.com/api/investor/v1/accounts/%s/funds/add' % (self.iid), payload=payload)
+			return self.__execute_post('accounts/%s/funds/add' % (self.iid), payload=payload)
 		else:
 			self.logger.info('Running in test mode. Skipping money transfer.')
 			return None
 
 	def get_pending_transfers(self):
-		xfers = json.loads(self.__execute_get('https://api.lendingclub.com/api/investor/v1/accounts/%s/funds/pending' % (self.iid)))
+		xfers = json.loads(self.__execute_get('accounts/%s/funds/pending' % (self.iid)))
 		if 'transfers' in xfers:
 			return xfers['transfers']
 		else:
