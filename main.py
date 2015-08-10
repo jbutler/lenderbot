@@ -116,7 +116,7 @@ def main():
 	# Transfer additional funds if we are below the minimum cash balance
 	total_funds = available_cash + pending_xfer_amt
 	if total_funds < conf['min_balance']:
-		xfer_amt = ((conf['min_balance'] - total_funds) + (conf['orderamnt'] - 1)) // conf['orderamnt'] * conf['orderamnt']
+		xfer_amt = ((conf['min_balance'] - total_funds) + (conf['orderamnt'] - .01)) // conf['orderamnt'] * conf['orderamnt']
 		logger.info('Transfering $%d to meet minimum balance requirement of $%d' % (xfer_amt, conf['min_balance']))
 		i.add_funds(xfer_amt)
 		pending_xfer_amt += xfer_amt
