@@ -88,7 +88,7 @@ class Investor:
 	def test_filters(self):
 		loans = self.__get_loans(showAll=True)
 		for f in self.filters:
-			print('Testing filter: %s' % (f))
+			self.logger.info('Testing filter: %s' % (f))
 			for l in loans:
 				f.apply(l)
 
