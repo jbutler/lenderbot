@@ -19,6 +19,10 @@ class LoanFilter(metaclass=ABCMeta):
 		self.fail_count = 0
 
 	@abstractmethod
+	def __str__(self):
+		pass
+
+	@abstractmethod
 	def _eval(self, loan):
 		pass
 
@@ -38,6 +42,9 @@ class BasicFilter(LoanFilter):
 		self.filterStr = filterStr
 		super(BasicFilter, self).__init__()
 
+	def __str__(self):
+		return self.filterStr
+
 	def _eval(self, loan):
 		# Replace lookups with the actual loan value
 		# Lookups are the loan key inside braces, i.e. the key 'loanTerm' would be encoded as {loanTerm}
@@ -47,6 +54,9 @@ class BasicFilter(LoanFilter):
 
 class ExclusionFilter(BasicFilter):
 	'A simple class to represent a LendingClub exclusion filter. Loans passing this filter will be discarded.'
+
+	def __str__(self):
+		return super(ExclusionFilter, self).__str__()
 
 	def _eval(self, loan):
 		return not super(ExclusionFilter, self)._eval(loan)

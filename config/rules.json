@@ -26,6 +26,9 @@
       },
       {
          "filter"  : "{ficoRangeLow} >= 675"
+      },
+      {
+         "filter"  : "{empLength} >= 12"
       }
    ],
    "exclusions":[
@@ -61,9 +64,6 @@
       },
       {
          "filter"  : "{collections12MthsExMed} != 0"
-      },
-      {
-         "filter"  : "{mthsSinceLastDelinq} != None"
       },
       {
          "filter"  : "{totCollAmt} != 0"

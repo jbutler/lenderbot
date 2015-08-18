@@ -41,7 +41,10 @@ class EvalConstant():
             try:
                 return float( self.value )
             except:
-                return str( self.value )
+                if self.value.lower() == "none":
+                    return None
+                else:
+                    return str( self.value )
 
 class EvalSignOp():
     "Class to evaluate expressions with a leading + or - sign"
@@ -106,14 +109,18 @@ class EvalComparisonOp():
         self.value = tokens[0]
     def eval(self, vars_ ):
         val1 = self.value[0].eval( vars_ )
-        for op,val in operatorOperands(self.value[1:]):
-            fn = self.opMap[op]
-            val2 = val.eval( vars_ )
-            if not fn(val1,val2):
-                break
-            val1 = val2
-        else:
-            return True
+        try:
+            for op,val in operatorOperands(self.value[1:]):
+                fn = self.opMap[op]
+                val2 = val.eval( vars_ )
+                if not fn(val1,val2):
+                    break
+                val1 = val2
+            else:
+                return True
+        except TypeError:
+            # Most likely we encountered a 'None' when we shouldn't have. Fail
+            return False
         return False
 
 class Arith():
