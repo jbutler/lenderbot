@@ -72,6 +72,12 @@ def init_filters(investor, filters):
 			filter_objs.append( LoanFilter.ExclusionFilter(rule['filter'] ) )
 	investor.add_filters(filter_objs)
 
+def get_portfolio(investor, portfolioName):
+	for p in investor.get_portfolios():
+		if p['portfolioName'] == portfolioName:
+			return p
+	return None
+
 def main():
 	# Parse arguments to determine if we're in test mode or production mode
 	parser = argparse.ArgumentParser(description='Autonomous LendingClub account management.')
@@ -98,6 +104,13 @@ def main():
 
 	# Create investor object
 	i = Investor.Investor(conf['iid'], conf['auth'], productionMode=args.productionMode)
+
+	# Get loan portfolio
+	portfolioName = datetime.now().__format__('%m.%y')
+	portfolio = get_portfolio(i, portfolioName)
+	if not portfolio:
+		portfolio = i.create_portfolio(portfolioName)
+	portfolioId = portfolio['portfolioId']
 
 	# Initialize filters
 	init_filters(i, filters)
@@ -141,7 +154,7 @@ def main():
 	#if 'yes' in input('Are you sure you wish to invest in these loans? (yes/no): '):
 	num_loans = int(min( int(available_cash) / conf['orderamnt'], len(new_loans)))
 	logger.info('Placing order with %s loans.' % (num_loans))
-	if i.submit_order(new_loans[0 : num_loans]):
+	if i.submit_order(new_loans[0 : num_loans], portfolioId):
 		email_body = 'Purchased %s loan(s) at %s\n\n' % (num_loans, datetime.now())
 		for loan in new_loans[0 : num_loans]:
 			email_body += '%s\n' % (str(loan))

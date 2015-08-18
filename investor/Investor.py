@@ -112,9 +112,9 @@ class Investor:
 		mynotes_json = self.__execute_get('accounts/%s/notes' % (self.iid))
 		return [ Loan.Loan(raw_loan) for raw_loan in json.loads(mynotes_json)['myNotes'] ]
 
-	def submit_order(self, loans):
+	def submit_order(self, loans, portfolioId=None):
 		if self.productionMode:
-			loan_dict = [ { 'loanId' : loan['id'], 'requestedAmount' : self.investAmt } for loan in loans ]
+			loan_dict = [ { 'loanId' : loan['id'], 'requestedAmount' : self.investAmt, 'portfolioId' : portfolioId } for loan in loans ]
 			order = json.dumps({ "aid" : self.iid, "orders" : loan_dict })
 			return self.__execute_post('accounts/%s/orders' % (self.iid), payload=order)
 		else:
@@ -135,4 +135,19 @@ class Investor:
 			return xfers['transfers']
 		else:
 			return []
+
+	def get_portfolios(self):
+		portfolios = json.loads(self.__execute_get('accounts/%s/portfolios' % (self.iid)))
+		try:
+			return portfolios['myPortfolios']
+		except KeyError:
+			return []
+
+	def create_portfolio(self, portfolioName, portfolioDescription=None):
+		if self.productionMode:
+			payload = json.dumps({ 'aid' : self.iid, 'portfolioName' : portfolioName, 'portfolioDescription' : portfolioDescription })
+			return self.__execute_post('accounts/%d/portfolios' % (self.iid))
+		else:
+			self.logger.info('Running in test mode. Skipping portfolio creation.')
+			return None
 
