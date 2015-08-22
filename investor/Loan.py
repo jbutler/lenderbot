@@ -1,11 +1,5 @@
 #!/usr/bin/env python3
 
-import re
-import sys
-import logging
-from datetime import datetime, timedelta
-from calendar import monthrange
-
 class Loan(dict):
 	'A simple class to represent a LendingClub loan. This is a wrapper implementing comparison methods to allow sorting.'
 
@@ -50,79 +44,4 @@ class Loan(dict):
 		str += 'Loan length: %d months\n' % (self['term'])
 		str += 'Monthly payment: $%d\n' % (self['installment'])
 		return str
-
-
-class PastLoan(Loan):
-	'A simple class to represent a historical LendingClub loan.'
-
-	def __init__(self, badKey, badVal, *args, **kw):
-		super(PastLoan,self).__init__(*args, **kw)
-
-		self._valid = self._sanitize(badKey, badVal)
-
-
-	def isValid(self):
-		return self._valid
-
-
-	def getAge(self):
-		if 'loan_age' not in self:
-			self['loan_age'] = self._calcAge()
-		return self['loan_age']
-
-
-	def _calcAge(self):
-		# Expects dates to be of the form 'Dec-2015'
-		start = datetime.strptime(str(self['issue_d']), '%b-%Y')
-		end = datetime.strptime(str(self['last_pymnt_d']), '%b-%Y')
-
-		# Count the months between issue date and last payment
-		months = 0
-		while (start < end):
-			# Get number of days of start's current month
-			mdays = monthrange(start.year, start.month)[1]
-			start += timedelta(days=mdays)
-
-			# If end >= (start + start.month[days]), count this month
-			if end >= start:
-				months += 1
-
-		return months
-
-
-	def _sanitize(self, badKey, badVal):
-		valid = True
-
-		# Catch bad formatting
-		if badKey in self:
-			#logging.debug(badKey, ''.join(self[badKey]))
-			logging.debug("Bad Key")
-			valid = False
-
-		# Used for debugging
-		if 'csv_line' not in self:
-			self['csv_line'] = "-1"
-
-		# If no payment received, last payment date = issue date
-		if re.match("^\s*$", self['last_pymnt_d']):
-			self['last_pymnt_d'] = self['issue_d']
-
-		for k,v in self.items():
-			if badVal == v:
-				logging.debug(badVal)
-				valid = False
-				break
-
-			# Replace empties with 0s
-			if re.match('^\s*$', str(v)):
-				self[k] = 0
-
-
-		# Can't safely access specific keys, other than id, when bad formatting
-		if not valid:
-			logging.debug(self.items())
-			logging.warning ("Fix Loan {}".format(self['id']))
-			logging.warning ("Line {}".format(self['csv_line']))
-
-		return valid
 
