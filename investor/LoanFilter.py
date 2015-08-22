@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from abc import ABCMeta, abstractmethod
-from investor import FilterParser
+import FilterParser
 
 import logging
 import re
