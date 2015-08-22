@@ -37,7 +37,7 @@ class LoanHistory(object):
 
       # Assume line 1 holds the keys
       for line,row in enumerate(csv.DictReader(fn, restkey=csvRestKey, restval=csvRestVal)):
-			row.update({'csv_line' : line})
+         row.update({'csv_line' : line})
          loan = PastLoan(csvRestKey, csvRestVal, row)
 
          if not loan.isValid():

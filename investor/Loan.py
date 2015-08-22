@@ -114,7 +114,7 @@ class PastLoan(Loan):
 				break
 
 			# Replace empties with 0s
-			if re.match('^\s*$', v):
+			if re.match('^\s*$', str(v)):
 				self[k] = 0
 
 
