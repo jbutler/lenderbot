@@ -8,6 +8,15 @@ Don't waste your time managing your LendingClub account. Set up a set of filters
 * pyparsing
 * requests
 
+## Installation
+While this package isn't hosted on PyPI, I have included a setup.py script. I'd recommend installing this in a virtual environment instead of cluttering up your system python installation. From your virtualenv, you may install using `pip` or any other package manager relying on `distutils`.
+
+`pip install /<path>/<to>/<auto-investor>`
+
+Make sure to install the package in Development Mode if you wish to make code changes:
+
+`pip install -e /<path>/<to>/<auto-investor>`
+
 ## Command Line Options
 Run `python main.py --help` for the most current list of command line options. Currently there are two supported options.
 * `-p`, `--productionMode`: This is a required option to do anything interesting. `auto-investor` will not transfer money into your account or invest in loans without it.

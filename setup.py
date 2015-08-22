@@ -6,6 +6,6 @@ setup(name='auto-investor',
       version='1.0.1',
       description='LendingClub auto-investment tool',
       author='Joe Butler',
-      author_email='joebutler@gmail.com',
+      author_email='joebutler88@gmail.com',
       packages=['investor'],
 )
