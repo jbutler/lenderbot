@@ -93,19 +93,20 @@ class PastLoan(Loan):
 	def _sanitize(self, badKey, badVal):
 		valid = True
 
-		# Catch bad formatting
-		if badKey in self:
-			#logging.debug(badKey, ''.join(self[badKey]))
-			logging.debug("Bad Key")
-			valid = False
-
 		# Used for debugging
 		if 'csv_line' not in self:
 			self['csv_line'] = "-1"
 
-		# If no payment received, last payment date = issue date
-		if re.match("^\s*$", self['last_pymnt_d']):
-			self['last_pymnt_d'] = self['issue_d']
+		# Catch bad formatting
+		if badKey in self:
+			logging.debug(badKey, ''.join(self[badKey]))
+			logging.debug("Bad Key")
+			valid = False
+
+		if 'last_pymnt_d' in self and re.match("^\s*$", self['last_pymnt_d']):
+			if 'issue_d' in self:
+				# If no payment received, last payment date = issue date
+				self['last_pymnt_d'] = self['issue_d']
 
 		for k,v in self.items():
 			if badVal == v:
@@ -117,10 +118,9 @@ class PastLoan(Loan):
 			if re.match('^\s*$', str(v)):
 				self[k] = 0
 
-
-		# Can't safely access specific keys, other than id, when bad formatting
 		if not valid:
 			logging.debug(self.items())
+			# Can't safely access specific keys, other than id, when incorrectly formatted
 			logging.warning ("Fix Loan {}".format(self['id']))
 			logging.warning ("Line {}".format(self['csv_line']))
 
