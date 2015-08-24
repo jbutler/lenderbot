@@ -11,12 +11,16 @@ from Loan import PastLoan
 from LoanFilter import BasicFilter
 
 class LoanHistory(object):
-   def __init__(self, loanFilt, files):
-      self.Files = files
+   def __init__(self, loanFilt, files=[]):
       self.Filt = loanFilt
-      self.DefaultLoans = {}
-      self.GoodLoans = {}
+      # Group loans to reduce search space at the expense of storage when groupings are not exclusive
+      self.Loans = {'default' : {},
+                    'good'    : {}}
 
+      if len(files) == 0:
+         # Download the CSVs
+
+      self.Files = files
       for f in self.Files:
          if os.path.isfile(f):
             logging.info("Gathering Stats on {}".format(f))
@@ -85,9 +89,9 @@ class LoanHistory(object):
    def _gatherDefaultStats(self, loan):
       logging.debug("Collecting loan {}".format(loan['id']))
       if loan['loan_status'] == "Charged Off":
-         loans = self.DefaultLoans
+         loans = self.Loans['default']
       else:
-         loans = self.GoodLoans
+         loans = self.Loans['good']
 
       # Put the loan into its age bucket
       age = loan.getAge()
@@ -122,9 +126,8 @@ class LoanHistory(object):
       logging.debug("Calculating default rate at " + ", ".join( [str(month) for month in months] ) + " months" )
 
       # TODO: Loan age using loan.getAge()
-      # TODO: consolidate default/good loans
-      defaultCnt = self._countByAge(self.DefaultLoans, months)
-      goodCnt = self._countByAge(self.GoodLoans, months)
+      defaultCnt = self._countByAge(self.Loans['default'], months)
+      goodCnt = self._countByAge(self.Loans['good'], months)
 
 
       total = sum( defaultCnt.values() )
@@ -151,7 +154,6 @@ class LoanHistory(object):
 
 
 def historyTest(files, periods):
-
    nh = LoanHistory( BasicFilter('{id} > 0'), files)
    nh.defaultRate( periods )
 
