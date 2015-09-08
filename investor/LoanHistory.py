@@ -17,9 +17,6 @@ class LoanHistory(object):
       self.Loans = {'default' : {},
                     'good'    : {}}
 
-      if len(files) == 0:
-         # Download the CSVs
-
       self.Files = files
       for f in self.Files:
          if os.path.isfile(f):
