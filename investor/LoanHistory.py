@@ -35,15 +35,18 @@ class LoanHistory(object):
    def _parseFile(self, fn):
       csvRestKey = 'xkey'
       csvRestVal = 'xval'
+      results = []
 
       # Assume line 1 holds the keys
       for line,row in enumerate(csv.DictReader(fn, restkey=csvRestKey, restval=csvRestVal)):
          row.update({'csv_line' : line})
          loan = PastLoan(csvRestKey, csvRestVal, row)
 
-         if not loan.isValid():
-            return False
-         elif self.Filt.apply(loan):
+         if loan.isValid():
+            results.append( (self.Filt.apply(loan, block=False), loan) )
+
+      for (res,loan) in results:
+         if res.get() == True:
             self._gatherDefaultStats(loan)
             self._gatherStereotypeStats(loan)
 
@@ -160,8 +163,8 @@ def printUsage():
    print ("\t-h|--help\n\t\tPrint this message and exit")
    print ("\t-f|--file <filename>\n\t\tSpecify the csv file to analyze")
    print ("\t-p|--period <n>\n\t\tSpecify points in time (in months) that you want to know the loan default rate of")
-   print ("\t-l|--log <level>\n\t\tSpecify the log level")
    print ("\t\tExample: '-p 6 -p 12 -p 18 -p 36' will tell you how many loans defaulted before 6 months, between 6 and 12, etc.")
+   print ("\t-l|--log <level>\n\t\tSpecify the log level")
 
 if (__name__) == "__main__":
    if (len(sys.argv) < 2):
