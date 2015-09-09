@@ -82,8 +82,7 @@ class Investor:
 		return loans
 
 	def add_filters(self, filters):
-		for f in filters:
-			self.filters.append(f)
+		self.filters.extend(filters)
 
 	def test_filters(self):
 		loans = self.__get_loans(showAll=True)
