@@ -147,7 +147,7 @@ class Investor:
 	def create_portfolio(self, portfolioName, portfolioDescription=None):
 		if self.productionMode:
 			payload = json.dumps({ 'aid' : self.iid, 'portfolioName' : portfolioName, 'portfolioDescription' : portfolioDescription })
-			return self.__execute_post('accounts/%d/portfolios' % (self.iid))
+			return self.__execute_post('accounts/%d/portfolios' % (self.iid), payload=payload)
 		else:
 			self.logger.info('Running in test mode. Skipping portfolio creation.')
 			return None
