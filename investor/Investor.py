@@ -17,7 +17,7 @@ class Investor:
 	def __init__(self, iid, authKey, investAmt=25, productionMode=False):
 		self.iid = iid
 		self.headers = { 'Authorization' : authKey, 'Accept' : 'application/json', 'Content-type' : 'application/json' }
-		self.endpoint = 'https://api.lendingclub.com/api/investor/v1/'
+		self.endpoint_root = 'https://api.lendingclub.com/api/investor/v1/'
 		self.investAmt = investAmt
 		self.productionMode = productionMode
 		self.logger = logging.getLogger(__name__)
@@ -44,7 +44,9 @@ class Investor:
 
 	def __execute_get(self, url):
 		self.__execute_delay()
-		response = requests.get(self.endpoint + url, headers=self.headers)
+		endpoint = self.endpoint_root + url
+		response = requests.get(endpoint, headers=self.headers)
+		self.logger.debug('Endpoint: %s\nHeaders: %s' % (endpoint, self.headers))
 		self.__set_ts()
 		if not response:
 			self.logger.error('Error occurred during GET: %s\n  HTTP response: %s' % (url, response.status_code))
@@ -52,7 +54,9 @@ class Investor:
 
 	def __execute_post(self, url, payload=None):
 		self.__execute_delay()
-		response = requests.post(self.endpoint + url, data=payload, headers=self.headers)
+		endpoint = self.endpoint_root + url
+		response = requests.post(endpoint, data=payload, headers=self.headers)
+		self.logger.debug('Endpoint: %s\nData: %s\nHeaders: %s' % (endpoint, payload, self.headers))
 		self.__set_ts()
 		if not response:
 			self.logger.error('Error occurred during POST: %s\n  HTTP response: %s' % (url, response.status_code))
@@ -128,7 +132,8 @@ class Investor:
 			# Construction order payload
 			loan_dict = [ { 'loanId' : loan['id'], 'requestedAmount' : self.investAmt } for loan in loans ]
 			if portfolioId:
-				loan_dict = [ loan.update({ 'portfolioId' : portfolioId }) for loan in loans ]
+				for loan in loans:
+					loan.update({ 'portfolioId' : portfolioId })
 			order = json.dumps({ "aid" : self.iid, "orders" : loan_dict })
 			return self.__execute_post('accounts/%s/orders' % (self.iid), payload=order)
 		else:
