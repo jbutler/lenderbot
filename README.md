@@ -18,9 +18,14 @@ Make sure to install the package in Development Mode if you wish to make code ch
 `pip install -e /<path>/<to>/<auto-investor>`
 
 ## Command Line Options
-Run `python main.py --help` for the most current list of command line options. Currently there are two supported options.
-* `-p`, `--productionMode`: This is a required option to do anything interesting. `auto-investor` will not transfer money into your account or invest in loans without it.
-* `-t`, `--testFilters`: This is a special mode that will retrieve the currently listed loans and apply each filter to give you confidence that they are well formed. It is recommended to run this after updating your loan filters. No notes will be purchased.
+Run `python main.py --help` for the most up to date list of command line options. Currently supported options include:
+* `-a`, `--autoMode`: Enter auto-mode. Check notes, fund account, and invest in available loans.
+* `-f`, `--fundAccount`: Transfer funds to meet minimum account balance.
+* `-i`, `--invest`: Invest spare cash in available loans passing filters.
+* `-l`, `--findLate`: Find notes that are no longer current and notify user.
+* `-p`, `--productionMode`: Enter production mode. Required to invest or transfer funds.
+* `-s`, `--summarizeNotes`: Provide status summary of all held notes.
+* `-t`, `--testFilters`: Test loan filters by applying them to all loans currently listed.
 
 ## Configuration
 Account configuration and lending criteria are two pieces that you'll need/want to tweak. There are separate config files for each.
