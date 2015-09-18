@@ -147,7 +147,7 @@ def _main():
 
 		if args.invest:
 			portfolio_name = None
-			if config['portfolio']:
+			if 'portfolio' in config:
 				portfolio_name = datetime.now().__format__(config['portfolio'])
 			notes = invest(i, portfolio=portfolio_name)
 			if notes and 'email' in config:
