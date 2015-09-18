@@ -66,8 +66,6 @@ class Investor:
 		# First, filter out loans we already own
 		num_loans = len(loans)
 		loans = [ loan for loan in loans if loan['id'] not in self.my_note_ids ]
-		if num_loans != len(loans):
-			self.logger.info('Filtering out loan(s) already invested in')
 
 		# Second, apply user defined filters
 		for f in self.filters:
