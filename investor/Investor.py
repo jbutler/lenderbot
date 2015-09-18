@@ -103,19 +103,32 @@ class Investor:
 			loans = self.__get_loans(showAll)
 			loans = self.__apply_filters(loans)
 			if len(loans):
-				self.logger.info('%d loan(s) pass filters' % len(loans))
 				return loans
-
-		self.logger.info('No loans pass filters.')
 		return []
 
 	def get_notes_owned(self):
-		mynotes_json = self.__execute_get('accounts/%s/notes' % (self.iid))
-		return [ Loan.Loan(raw_loan) for raw_loan in json.loads(mynotes_json)['myNotes'] ]
+		mynotes = self.__execute_get('accounts/%s/notes' % (self.iid))
+		if mynotes:
+			return [ Loan.Loan(raw_loan) for raw_loan in json.loads(mynotes)['myNotes'] ]
+		else:
+			self.logger.warning('Error retrieving owned notes: %s' % (mynotes))
+		return None
 
-	def submit_order(self, loans, portfolioId=None):
+	def submit_order(self, loans, portfolio=None):
 		if self.productionMode:
-			loan_dict = [ { 'loanId' : loan['id'], 'requestedAmount' : self.investAmt, 'portfolioId' : portfolioId } for loan in loans ]
+			# Portfolio parameter can either be a dictionary or portfolio ID
+			portfolioId = None
+			if isinstance(portfolio, dict):
+				portfolioId = portfolio['portfolioId']
+			elif isinstance(portfolio, str):
+				portfolioId = portfolio
+			elif portfolio is not None:
+				self.logger.error('Invalid portfolio type passed to submit_order()')
+
+			# Construction order payload
+			loan_dict = [ { 'loanId' : loan['id'], 'requestedAmount' : self.investAmt } for loan in loans ]
+			if portfolioId:
+				loan_dict = [ loan.update({ 'portfolioId' : portfolioId }) for loan in loans ]
 			order = json.dumps({ "aid" : self.iid, "orders" : loan_dict })
 			return self.__execute_post('accounts/%s/orders' % (self.iid), payload=order)
 		else:
@@ -143,6 +156,16 @@ class Investor:
 			return portfolios['myPortfolios']
 		except KeyError:
 			return []
+
+	def get_portfolio(self, name, create=False):
+		# Return requested portfolio, if it exists
+		portfolios = self.get_portfolios()
+		for p in portfolios:
+			if p['portfolioName'] == name:
+				return p
+		# Portfolio doesn't exist
+		if create:
+			return self.create_portfolio(name)
 
 	def create_portfolio(self, portfolioName, portfolioDescription=None):
 		if self.productionMode:

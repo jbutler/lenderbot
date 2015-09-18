@@ -4,161 +4,172 @@ import argparse
 from datetime import datetime
 import json
 import logging.config
-import io
-import operator
 import os
-import shelve
-import smtplib
-import sys
-import traceback
 
+from notify import *
 from investor import Investor
 from investor import LoanFilter
 
 
-# TODO: Figure out a way to make this not suck
-# The user email address is in the configuration dictionary. Need a good way to get at that
-# from this exception handler
-notification_email = ''
-def global_exc_handler(type, value, tb):
-	# Catch all uncaught exceptions and email the traceback
-	exception = io.StringIO()
-	traceback.print_exception(type, value, tb, file=exception)
-	email_msg = 'Uncaught exception occurred:\n\n' + exception.getvalue()
-	send_email(notification_email, 'Auto-Investor uncaught exception', email_msg)
-	return sys.__excepthook__(type, value, tb)
+def invest(investor, portfolio=None, orderamnt=25):
+	# Get loan portfolio
+	p = None
+	if portfolio:
+		p = investor.get_portfolio(portfolio)
+		if not p:
+			logger.error('Could not create portfolio (%s)' % (portfolio))
 
-def send_email(recipient, subject, email_body):
-	sender = 'auto-invest@domain.com'
-	message = """From: Auto-Invest <%s>
-To: <%s>
-Subject: %s
-%s""" % (sender, recipient, subject, email_body)
+	# Find loans meeting filter criteria
+	logger.info('Retrieving new loans')
+	new_loans = investor.get_new_loans()
 
-	try:
-		s = smtplib.SMTP('localhost')
-		s.sendmail(sender, recipient, message)
-		logger.info('Notification email sent successfully.')
-	except:
-		logger.warn('Failed to send notification email.')
-	return
+	# Purchase as many notes as we can
+	num_loans = int(min(investor.get_cash() / orderamnt, len(new_loans)))
+	if num_loans > 0:
+		logger.info('Placing order with %s loans.' % (num_loans))
+		investor.submit_order(new_loans[0:num_loans], p)
+	else:
+		logger.info('No new loans pass filters.')
 
-def email_purchase_notification(recipient, num_loans, email_body=''):
-	return send_email(recipient, str(num_loans) + ' LendingClub Notes Purchased', email_body)
+	# Return only loans we invested in
+	return new_loans[:num_loans]
 
-def add_to_db(db_file, loans):
-	try:
-		db = shelve.open(db_file)
-	except:
-		logger.error('Failed to open database (%s). It may be corrupt?' % (db_file))
+
+def fund_account(investor, min_balance=0, transfer_multiple=25):
+	cash = investor.get_cash()
+	if cash >= min_balance:
+		logger.info('Current account balance: $%d' % (cash))
 		return
-	for loan in loans:
-		if str(loan['id']) not in db:
-			logger.info('Adding loan %s to database' % loan['id'])
-			db[str(loan['id'])] = loan
-	db.close()
+
+	# Sum pending transfers amounts
+	xfers = investor.get_pending_transfers()
+	pending_xfer_amt = sum([ x['amount'] for x in xfers ])
+
+	# Transfer additional funds if cash + pending transfers < min_balance
+	total_funds = cash + pending_xfer_amt
+	if total_funds < min_balance:
+		xfer_amt = ((min_balance - total_funds) + (transfer_multiple - .01)) // transfer_multiple * transfer_multiple
+		logger.info('Transfering $%d to meet minimum balance requirement of $%d' % (xfer_amt, min_balance))
+		investor.add_funds(xfer_amt)
+
+
+def note_summary(investor, late_only=False):
+	logger.info('Note summary here')
 	return
 
-def init_filters(investor, filters):
-	# For each rule, create a filter object and add it to the investor
+
+def load_filters(rules=os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config', 'rules.json')):
+	# Load filter rules from config
+	filters = {}
+	with open(rules) as f:
+		filters = json.load(f)
+
+	# Initialize filters
 	filter_objs = []
 	if 'basic' in filters:
 		logger.info('Adding %s basic filter(s)' % (len(filters['basic'])))
 		for rule in filters['basic']:
-			filter_objs.append( LoanFilter.BasicFilter(rule['filter'] ) )
+			filter_objs.append(LoanFilter.BasicFilter(rule['filter']))
 	if 'exclusions' in filters:
 		logger.info('Adding %s exclusion filter(s)' % (len(filters['exclusions'])))
 		for rule in filters['exclusions']:
-			filter_objs.append( LoanFilter.ExclusionFilter(rule['filter'] ) )
-	investor.add_filters(filter_objs)
+			filter_objs.append(LoanFilter.ExclusionFilter(rule['filter']))
 
-def get_portfolio(investor, portfolioName):
-	for p in investor.get_portfolios():
-		if p['portfolioName'] == portfolioName:
-			return p
-	return None
+	return filter_objs
 
-def main():
-	# Parse arguments to determine if we're in test mode or production mode
+
+def load_config(config_file=os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config', 'config.json')):
+	# Load and validate config
+	config = {}
+	with open(config_file) as f:
+		config = json.load(f)
+
+	# Account ID and authentication key are required to do anything useful
+	if not 'iid' in config:
+		logger.warning('Investor ID not present in config')
+	if not 'auth' in config:
+		logger.warning('Authentication key not present in config')
+
+	# Assume $25 order amount and $0 minimum balance if either are missing
+	if not 'orderamnt' in config:
+		logger.info('Setting default order amount to $25')
+		config['orderamnt'] = 25
+	if not 'min_balance' in config:
+		logger.info('Setting default minimum balance to $0')
+		config['min_balance'] = 0
+
+	# Email is required for notifications
+	if not 'email' in config:
+		logger.warning('Email is required to receive notifications')
+
+	return config
+
+
+def _parse_args():
 	parser = argparse.ArgumentParser(description='Autonomous LendingClub account management.')
+	parser.add_argument('-a', '--autoMode', action='store_true', help='Enter auto-mode. Check notes, fund account, and invest in available loans.')
+	parser.add_argument('-f', '--fundAccount', action='store_true', help='Transfer funds to meet minimum account balance.')
+	parser.add_argument('-i', '--invest', action='store_true', help='Invest spare cash in available loans passing filters.')
+	parser.add_argument('-l', '--findLate', action='store_true', help='Find notes that are no longer current and notify user.')
 	parser.add_argument('-p', '--productionMode', action='store_true', help='Enter production mode. Required to invest or transfer funds.')
+	parser.add_argument('-s', '--summarizeNotes', action='store_true', help='Provide status summary of all held notes.')
 	parser.add_argument('-t', '--testFilters', action='store_true', help='Test loan filters by applying them to all loans currently listed. Exit once complete.')
-	args = parser.parse_args()
-	if args.productionMode:
-		logger.warning('Entering production mode. Auto-investor may invest in loans or transfer money into your LendingClub account according to your configuration.')
-	if args.testFilters:
-		logger.info('Entering filter test mode.')
+	return parser.parse_args()
 
-	# Retrieve configuration so we can set up exception handler
-	config = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config', 'config.json')
-	conf = json.load(open(config))
 
-	global notification_email
-	notification_email = conf['email']
-	sys.excepthook = global_exc_handler
+def _main():
+	# First things first. Load the config
+	config = load_config()
 
-	# Now that exceptions will be emailed, parse loan filters
-	rules = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config', 'rules.json')
-	filters = json.load(open(rules))
-	db = 'loans.db'
+	try:
+		args = _parse_args()
+		if args.productionMode:
+			logger.warning('Entering production mode. Auto-investor may invest in loans or transfer money into your LendingClub account according to your configuration.')
 
-	# Create investor object
-	i = Investor.Investor(conf['iid'], conf['auth'], productionMode=args.productionMode)
+		# Auto-mode is a set of operations
+		if args.autoMode:
+			args.findLate = True
+			args.fundAccount = True
+			args.invest = True
 
-	# Get loan portfolio
-	portfolioName = datetime.now().__format__('%m.%y')
-	portfolio = get_portfolio(i, portfolioName)
-	if not portfolio:
-		portfolio = i.create_portfolio(portfolioName)
-	portfolioId = portfolio['portfolioId']
+		# Create investor object
+		i = Investor.Investor(config['iid'], config['auth'], productionMode=args.productionMode)
+		if args.invest or args.testFilters:
+			i.add_filters(load_filters())
 
-	# Initialize filters
-	init_filters(i, filters)
+		if args.summarizeNotes:
+			summary = note_summary(i)
+		elif args.findLate:
+			summary = note_summary(i, late_only=True)
 
-	# Conditionally verify filters
-	if args.testFilters:
-		i.test_filters()
-		logger.info('Filter test complete.')
-		return
+		if args.fundAccount:
+			fund_account(i, config['min_balance'])
 
-	# Retrieve available cash and any pending transfers
-	available_cash = i.get_cash()
-	xfers = i.get_pending_transfers()
-	pending_xfer_amt = sum(map(lambda x : x['amount'], xfers))
+		if args.invest:
+			portfolio_name = None
+			if config['portfolio']:
+				portfolio_name = datetime.now().__format__(config['portfolio'])
+			notes = invest(i, portfolio=portfolio_name)
+			if notes and 'email' in config:
+				email_body = 'Purchased %s loan(s) at %s\n\n' % (len(notes), datetime.now())
+				for note in notes:
+					email_body += '%s\n' % (str(note))
+				email_purchase_notification(config['email'], len(notes), email_body=email_body)
 
-	# Transfer additional funds if we are below the minimum cash balance
-	total_funds = available_cash + pending_xfer_amt
-	if total_funds < conf['min_balance']:
-		xfer_amt = ((conf['min_balance'] - total_funds) + (conf['orderamnt'] - .01)) // conf['orderamnt'] * conf['orderamnt']
-		logger.info('Transfering $%d to meet minimum balance requirement of $%d' % (xfer_amt, conf['min_balance']))
-		i.add_funds(xfer_amt)
-		pending_xfer_amt += xfer_amt
+		if args.testFilters:
+			i.test_filters()
 
-	# Retrieve new loans that pass filters
-	logger.info('Retrieving newly posted loans')
-	new_loans = i.get_new_loans()
-	if not len(new_loans):
-		logger.info('No new loans to invest in. Exiting.')
-		return
+	except KeyboardInterrupt:
+		# Don't email if we manually kill the program
+		logger.info('Keyboard interrupt received - killing program')
 
-	# Save loans away for characterization later
-	logger.info('%s loans pass filters' % (len(new_loans)))
-	add_to_db(db, new_loans)
+	except:
+		# Send email notification about uncaught exception
+		logger.error('Uncaught exception occurred.')
 
-	# Bail out if we don't have enough cash to invest
-	if available_cash < conf['orderamnt']:
-		logger.warning('Exiting. Not enough cash to invest')
-		return
+		# TODO: Send email with backtrace
 
-	# Hell yeah, let's order
-	#if 'yes' in input('Are you sure you wish to invest in these loans? (yes/no): '):
-	num_loans = int(min( int(available_cash) / conf['orderamnt'], len(new_loans)))
-	logger.info('Placing order with %s loans.' % (num_loans))
-	if i.submit_order(new_loans[0 : num_loans], portfolioId):
-		email_body = 'Purchased %s loan(s) at %s\n\n' % (num_loans, datetime.now())
-		for loan in new_loans[0 : num_loans]:
-			email_body += '%s\n' % (str(loan))
-		email_purchase_notification(conf['email'], num_loans, email_body=email_body)
+		raise
 
 	return
 
@@ -168,9 +179,5 @@ if __name__ == '__main__':
 	logging.config.dictConfig(json.load(open(log_config, 'rt')))
 	logger = logging.getLogger('investor')
 
-	try:
-		main()
-	except KeyboardInterrupt:
-		# Don't email if we manually kill the program
-		logger.info('Keyboard interrupt received - killing program')
+	_main()
 

@@ -42,13 +42,30 @@ class Loan(dict):
 
 	def __repr__(self):
 		# Print some of the more interesting loan details
-		str  = 'Loan ID: %s\n' % (self['id'])
+		# LendingClub is stupid and doesn't return the same data format
+		# for in funding loans and owned notes
+		str = ''
+		try:
+			str += 'Loan ID: %s\n' % (self['loanId'])
+		except KeyError:
+			str += 'Loan ID: %s\n' % (self['id'])
 		str += 'Amount Requested: $%d\n' % (self['loanAmount'])
-		str += 'Loan purpose: %s\n' % (self['purpose'])
+		#str += 'Loan purpose: %s\n' % (self['purpose'])
 		str += 'Loan grade: %s\n' % (self['subGrade'])
-		str += 'Interest rate: %.2f\n' % (self['intRate'])
-		str += 'Loan length: %d months\n' % (self['term'])
-		str += 'Monthly payment: $%d\n' % (self['installment'])
+		#str += 'Loan grade: %s\n' % (self['grade'])
+		try:
+			str += 'Interest rate: %.2f\n' % (self['interestRate'])
+		except KeyError:
+			str += 'Interest rate: %.2f\n' % (self['intRate'])
+		try:
+			str += 'Loan length: %d months\n' % (self['loanLength'])
+		except KeyError:
+			str += 'Loan length: %d months\n' % (self['term'])
+		try:
+			str += 'Monthly payment: $%d\n' % (self['installment'])
+		except KeyError:
+			# Get notes owned API doesn't include monthly payment info
+			pass
 		return str
 
 
