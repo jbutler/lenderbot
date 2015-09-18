@@ -5,6 +5,7 @@ from investor import FilterParser
 
 import logging
 import re
+from multiprocessing import Pool, cpu_count
 
 
 class LoanFilter(metaclass=ABCMeta):
@@ -23,16 +24,11 @@ class LoanFilter(metaclass=ABCMeta):
 		pass
 
 	@abstractmethod
-	def _eval(self, loan):
+	def _eval(self, loan, block):
 		pass
 
-	def apply(self, loan):
-		if self._eval(loan):
-			self.pass_count += 1
-			return True
-		else:
-			self.fail_count += 1
-			return False
+	def apply(self, loan, block=True):
+		return self._eval(loan, block)
 
 
 class BasicFilter(LoanFilter):
@@ -42,15 +38,21 @@ class BasicFilter(LoanFilter):
 		self.filterStr = filterStr
 		super(BasicFilter, self).__init__()
 
+		self.ppool = Pool(processes=cpu_count())
+
 	def __str__(self):
 		return self.filterStr
 
-	def _eval(self, loan):
+	def _eval(self, loan, block):
 		# Replace lookups with the actual loan value
 		# Lookups are the loan key inside braces, i.e. the key 'loanTerm' would be encoded as {loanTerm}
 		replacedFilterStr = re.sub('{[A-Za-z0-9]+}', lambda match : str(loan[match.group(0)[1:-1]]), self.filterStr)
 		self.logger.debug('Transformed filter: %s -> %s' % (self.filterStr, replacedFilterStr))
-		return LoanFilter.LoanFilterParser.eval(replacedFilterStr)
+		res = self.ppool.apply_async(LoanFilter.LoanFilterParser.eval, [replacedFilterStr])
+		if block:
+			return res.get()
+		else:
+			return res
 
 class ExclusionFilter(BasicFilter):
 	'A simple class to represent a LendingClub exclusion filter. Loans passing this filter will be discarded.'
@@ -58,8 +60,8 @@ class ExclusionFilter(BasicFilter):
 	def __str__(self):
 		return super(ExclusionFilter, self).__str__()
 
-	def _eval(self, loan):
-		return not super(ExclusionFilter, self)._eval(loan)
+	def _eval(self, loan, block):
+		return not super(ExclusionFilter, self)._eval(loan, block)
 
 
 if __name__ == '__main__':
