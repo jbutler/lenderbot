@@ -163,6 +163,10 @@ def _main():
         # Don't email if we manually kill the program
         logger.info('Keyboard interrupt received - killing program')
 
+    except SystemExit:
+        # Argparse calls sys.exit() when the --help option is given
+        pass
+
     except:
         # Send email notification about uncaught exception
         logger.error('Uncaught exception occurred.')
