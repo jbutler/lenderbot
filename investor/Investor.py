@@ -77,7 +77,7 @@ class Investor:
         listings_json = self.__execute_get('loans/listing?showAll=%s' % (showAll))
         try:
             raw_loans = json.loads(listings_json)['loans']
-            loans = [ Loan.Loan(raw_loan) for raw_loan in raw_loans ]
+            loans = [ Loan.InFundingLoan(raw_loan) for raw_loan in raw_loans ]
         except:
             # Key error, most likely
             self.logger.warning('Loan retrieval failed. Response text:\n  -- %s' % (listings_json))
@@ -110,7 +110,15 @@ class Investor:
     def get_notes_owned(self):
         mynotes = self.__execute_get('accounts/%s/notes' % (self.iid))
         if mynotes:
-            return [ Loan.Loan(raw_loan) for raw_loan in json.loads(mynotes)['myNotes'] ]
+            return [ Loan.OwnedNote(raw_loan) for raw_loan in json.loads(mynotes)['myNotes'] ]
+        else:
+            self.logger.warning('Error retrieving owned notes: %s' % (mynotes))
+        return None
+
+    def get_detailed_notes_owned(self):
+        mynotes = self.__execute_get('accounts/%s/detailednotes' % (self.iid))
+        if mynotes:
+            return [ Loan.DetailedOwnedNote(raw_loan) for raw_loan in json.loads(mynotes)['myNotes'] ]
         else:
             self.logger.warning('Error retrieving owned notes: %s' % (mynotes))
         return None

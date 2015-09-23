@@ -40,33 +40,69 @@ class Loan(dict):
     def set_quality(self, quality):
         self.quality = quality
 
+
+class InFundingLoan(Loan):
+    'Implement string representation for In Funding Loans'
+
     def __repr__(self):
         # Print some of the more interesting loan details
-        # LendingClub is stupid and doesn't return the same data format
-        # for in funding loans and owned notes
         str = ''
-        try:
-            str += 'Loan ID: %s\n' % (self['loanId'])
-        except KeyError:
-            str += 'Loan ID: %s\n' % (self['id'])
+        str += 'Loan ID: %s\n' % (self['id'])
         str += 'Amount Requested: $%d\n' % (self['loanAmount'])
-        #str += 'Loan purpose: %s\n' % (self['purpose'])
+        str += 'Loan purpose: %s\n' % (self['purpose'])
         str += 'Loan grade: %s\n' % (self['subGrade'])
-        #str += 'Loan grade: %s\n' % (self['grade'])
-        try:
-            str += 'Interest rate: %.2f\n' % (self['interestRate'])
-        except KeyError:
-            str += 'Interest rate: %.2f\n' % (self['intRate'])
-        try:
-            str += 'Loan length: %d months\n' % (self['loanLength'])
-        except KeyError:
-            str += 'Loan length: %d months\n' % (self['term'])
-        try:
-            str += 'Monthly payment: $%d\n' % (self['installment'])
-        except KeyError:
-            # Get notes owned API doesn't include monthly payment info
-            pass
+        str += 'Interest rate: %.2f\n' % (self['intRate'])
+        str += 'Loan length: %d months\n' % (self['term'])
+        str += 'Monthly payment: $%d\n' % (self['installment'])
         return str
+
+
+class OwnedNote(Loan):
+    'Implement string representation for Owned Notes'
+
+    def __repr__(self):
+        # Print some of the more interesting note details
+        str = ''
+        str += 'Loan ID: %s\n' % (self['loanId'])
+        str += 'Note ID: %s\n' % (self['noteId'])
+        str += 'Interest rate: %.2f\n' % (self['interestRate'])
+        str += 'Loan length: %d months\n' % (self['loanLength'])
+        return str
+
+class DetailedOwnedNote(Loan):
+    'Implement string representation for Detailed Owned Notes'
+
+    def __repr__(self):
+        # Print some of the more interesting note details
+        str = ''
+        str += 'Loan ID: %s\n' % (self['loanId'])
+        str += 'Note ID: %s\n' % (self['noteId'])
+        str += 'Loan amount: %d\n' % (self['loanAmount'])
+        str += 'Loan purpose: %s\n' % (self['purpose'])
+        str += 'Loan grade: %s\n' % (self['grade'])
+        str += 'Interest rate: %.2f\n' % (self['interestRate'])
+        str += 'Loan length: %d months\n' % (self['loanLength'])
+        str += 'Loan status: %s\n' % (self['loanStatus'])
+        str += 'Payments received: $%.2f\n' % (self['paymentsReceived'])
+        return str
+
+    def is_fully_paid(self):
+        return self['loanStatus'] == 'Fully Paid'
+
+    def is_charged_off(self):
+        return self['loanStatus'] == 'Charged Off'
+
+    def is_late(self):
+        return 'Late' in self['loanStatus']
+
+    def is_current(self):
+        return self['loanStatus'] == 'Current' or self['loanStatus'] == 'Issued'
+
+    def is_open(self):
+        return not self.is_fully_paid() and not self.is_charged_off()
+
+    def is_issued(self):
+        return not self['loanStatus'] == 'In Review'
 
 
 class PastLoan(Loan):

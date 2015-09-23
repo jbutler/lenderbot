@@ -23,3 +23,5 @@ def email_purchase_notification(recipient, num_loans, email_body=''):
 def email_unhandled_crash_notification(recipient, backtrace):
     return send_email(recipient, 'Uncaught exception', backtrace)
 
+def email_note_summary(recipient, summary):
+    return send_email(recipient, 'Auto-Investor Owned Note Summary', summary)

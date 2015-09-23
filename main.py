@@ -53,9 +53,42 @@ def fund_account(investor, min_balance=0, transfer_multiple=25):
         investor.add_funds(xfer_amt)
 
 
-def note_summary(investor, late_only=False):
-    logger.info('Note summary here')
-    return
+def note_summary(investor, late_only=False, include_closed=False):
+    # Get full list of owned notes
+    notes = investor.get_detailed_notes_owned()
+
+    # Separate out notes by status
+    current = [ note for note in notes if note.is_current() ]
+    late    = [ note for note in notes if note.is_late() ]
+    opened  = [ note for note in notes if note.is_open() ]
+    closed  = [ note for note in notes if not note.is_open() ]
+    review  = [ note for note in notes if not note.is_issued() ]
+
+    summary = ''
+    if late_only:
+        summary = '%d late note(s)' % (len(late))
+        for note in late:
+            summary += '\n%s' % (note)
+
+    else:
+        summary_notes = opened
+        if include_closed:
+            summary_notes += len(closed)
+        avg_rate = sum(x['interestRate'] for x in summary_notes) / len(summary_notes)
+        summary  = '%d note(s) owned at an average interest rate of %.2f%%\n' % (len(summary_notes), avg_rate)
+        summary += '%d open note(s):\n' % (len(opened))
+        summary += '  %d current note(s)\n' % (len(current))
+        if include_closed:
+            summary += '  %d closed note(s)\n' % (len(closed))
+        summary += '  %d late note(s)\n' % (len(late))
+        summary += '  %d note(s) in review\n' % (len(review))
+        grade_summary = '  Grades - '
+        grades = [ 'A', 'B', 'C', 'D', 'E', 'F', 'G' ]
+        for grade in grades:
+            grade_summary += '%c: %d  ' % (grade, len([n for n in summary_notes if grade in n['grade']]))
+        summary += grade_summary
+
+    return summary
 
 
 def load_filters(rules=os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config', 'rules.json')):
@@ -139,8 +172,11 @@ def _main():
 
         if args.summarizeNotes:
             summary = note_summary(i)
+            logger.info(summary)
+            email_note_summary(config['email'], summary)
         elif args.findLate:
             summary = note_summary(i, late_only=True)
+            logger.info(summary)
 
         if args.fundAccount:
             fund_account(i, config['min_balance'])
