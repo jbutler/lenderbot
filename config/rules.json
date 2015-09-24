@@ -33,10 +33,7 @@
    ],
    "exclusions":[
       {
-         "filter"  : "{annualInc} < 90000"
-      },
-      {
-         "filter"  : "{annualInc} > 180000"
+         "filter"  : "{annualInc} < 75000"
       },
       {
          "filter"  : "{purpose} == moving"
