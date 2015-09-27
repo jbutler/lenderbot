@@ -23,13 +23,17 @@ def invest(investor, portfolio=None, orderamnt=25):
     logger.info('Retrieving new loans')
     new_loans = investor.get_new_loans()
 
+    # Log number of loans that pass filters
+    if new_loans:
+        logger.info('%d loan(s) pass filters' % (len(new_loans)))
+    else:
+        logger.info('No new loans pass filters')
+
     # Purchase as many notes as we can
     num_loans = int(min(investor.get_cash() / orderamnt, len(new_loans)))
     if num_loans > 0:
-        logger.info('Placing order with %s loans.' % (num_loans))
+        logger.info('Placing order with %s loans' % (num_loans))
         investor.submit_order(new_loans[0:num_loans], p)
-    else:
-        logger.info('No new loans pass filters.')
 
     # Return only loans we invested in
     return new_loans[:num_loans]
