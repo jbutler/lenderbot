@@ -15,7 +15,7 @@ def invest(investor, portfolio=None, orderamnt=25):
     # Get loan portfolio
     p = None
     if portfolio:
-        p = investor.get_portfolio(portfolio)
+        p = investor.get_portfolio(portfolio, create=True)
         if not p:
             logger.error('Could not create portfolio (%s)' % (portfolio))
 

@@ -23,6 +23,7 @@ class Investor:
         self.logger = logging.getLogger(__name__)
         self.time_delay = datetime.timedelta(seconds=1) # We must wait one second between requests
         self.last_request_ts = datetime.datetime.min # No requests have been made yet
+        self.max_log_len = 512
         self.filters = []
         self.my_note_ids = [ x['loanId'] for x in self.get_notes_owned() ]
 
@@ -42,24 +43,31 @@ class Investor:
             time.sleep(sleep_time)
         return
 
-    def __execute_get(self, url):
+    def __execute_get(self, url, log=True):
         self.__execute_delay()
         endpoint = self.endpoint_root + url
         response = requests.get(endpoint, headers=self.headers)
-        self.logger.debug('Endpoint: %s\nHeaders: %s' % (endpoint, self.headers))
         self.__set_ts()
-        if not response:
-            self.logger.error('Error occurred during GET: %s\n  HTTP response: %s' % (url, response.status_code))
+        if log and len(response.text) < self.max_log_len:
+            self.logger.debug('-------- GET BEGIN --------')
+            self.logger.debug('Endpoint: %s' % (endpoint))
+            self.logger.debug('Headers:  %s' % (self.headers))
+            self.logger.debug('Response: %s | %s' % (response, response.text))
+            self.logger.debug('--------- GET END ---------')
         return response.text
 
-    def __execute_post(self, url, payload=None):
+    def __execute_post(self, url, payload=None, log=True):
         self.__execute_delay()
         endpoint = self.endpoint_root + url
         response = requests.post(endpoint, data=payload, headers=self.headers)
-        self.logger.debug('Endpoint: %s\nData: %s\nHeaders: %s' % (endpoint, payload, self.headers))
         self.__set_ts()
-        if not response:
-            self.logger.error('Error occurred during POST: %s\n  HTTP response: %s' % (url, response.status_code))
+        if log and len(response.text) < self.max_log_len:
+            self.logger.debug('-------- POST BEGIN --------')
+            self.logger.debug('Endpoint: %s' % (endpoint))
+            self.logger.debug('Data:     %s' % (payload))
+            self.logger.debug('Headers:  %s' % (self.headers))
+            self.logger.debug('Response: %s | %s' % (response, response.text))
+            self.logger.debug('--------- POST END ---------')
         return response.text
 
     def __apply_filters(self, loans):
