@@ -182,9 +182,6 @@ def _main():
             summary = note_summary(i, late_only=True)
             logger.info(summary)
 
-        if args.fundAccount:
-            fund_account(i, config['min_balance'])
-
         if args.invest:
             portfolio_name = None
             if 'portfolio' in config:
@@ -195,6 +192,9 @@ def _main():
                 for note in notes:
                     email_body += '%s\n' % (str(note))
                 email_purchase_notification(config['email'], len(notes), email_body=email_body)
+
+        if args.fundAccount:
+            fund_account(i, config['min_balance'])
 
         if args.testFilters:
             i.test_filters()
