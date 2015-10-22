@@ -25,14 +25,20 @@ def invest(investor, portfolio=None, orderamnt=25):
 
     # Log number of loans that pass filters
     if new_loans:
-        logger.info('%d loan(s) pass filters' % (len(new_loans)))
+        if len(new_loans) > 1:
+            logger.info('%d loans pass filters' % (len(new_loans)))
+        else:
+            logger.info('1 loan passes filters')
     else:
         logger.info('No new loans pass filters')
 
     # Purchase as many notes as we can
     num_loans = int(min(investor.get_cash() / orderamnt, len(new_loans)))
     if num_loans > 0:
-        logger.info('Placing order with %s loans' % (num_loans))
+        if num_loans > 1:
+            logger.info('Placing order with %s loans' % (num_loans))
+        else:
+            logger.info('Placing order with 1 loan')
         investor.submit_order(new_loans[0:num_loans], p)
 
     # Return only loans we invested in
@@ -42,7 +48,6 @@ def invest(investor, portfolio=None, orderamnt=25):
 def fund_account(investor, min_balance=0, transfer_multiple=25):
     cash = investor.get_cash()
     if cash >= min_balance:
-        logger.info('Current account balance: $%d' % (cash))
         return
 
     # Sum pending transfers amounts
