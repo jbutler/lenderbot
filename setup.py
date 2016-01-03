@@ -2,9 +2,9 @@
 
 from distutils.core import setup
 
-setup(name='auto-investor',
-      version='1.0.5',
-      description='LendingClub auto-investment tool',
+setup(name='lenderbot',
+      version='1.0.6',
+      description='LendingClub auto investor tool',
       author='Joe Butler',
       author_email='joebutler88@gmail.com',
       packages=['investor'],
