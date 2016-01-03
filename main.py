@@ -14,6 +14,9 @@ from investor import Investor
 from investor import LoanFilter
 
 
+CONFIG_DIR = os.path.join(os.path.expanduser('~'), '.lenderbot')
+
+
 def invest(investor, portfolio=None, orderamnt=25):
     # Get loan portfolio
     p = None
@@ -107,7 +110,7 @@ def note_summary(investor, late_only=False, include_closed=False):
     return summary
 
 
-def load_filters(rules=os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config', 'rules.json')):
+def load_filters(rules=os.path.join(CONFIG_DIR, 'rules.json')):
     # Load filter rules from config
     filters = {}
     with open(rules) as f:
@@ -127,7 +130,7 @@ def load_filters(rules=os.path.join(os.path.dirname(os.path.realpath(__file__)),
     return filter_objs
 
 
-def load_config(config_file=os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config', 'config.json')):
+def load_config(config_file=os.path.join(CONFIG_DIR, 'config.json')):
     # Load and validate config
     config = {}
     with open(config_file) as f:
@@ -230,8 +233,7 @@ def _main():
     return
 
 if __name__ == '__main__':
-    # TODO: This is ugly
-    log_config = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config', 'logging.json')
+    log_config = os.path.join(CONFIG_DIR, 'logging.json')
     logging.config.dictConfig(json.load(open(log_config, 'rt')))
     logger = logging.getLogger('investor')
 
