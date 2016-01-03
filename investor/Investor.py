@@ -145,7 +145,7 @@ class Investor:
             # Construction order payload
             loan_dict = [ { 'loanId' : loan['id'], 'requestedAmount' : self.investAmt } for loan in loans ]
             if portfolioId:
-                for loan in loans:
+                for loan in loan_dict:
                     loan.update({ 'portfolioId' : portfolioId })
             order = json.dumps({ "aid" : self.iid, "orders" : loan_dict })
             return self.__execute_post('accounts/%s/orders' % (self.iid), payload=order)
