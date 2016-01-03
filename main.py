@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 
 import argparse
-from datetime import datetime
+from   datetime import datetime
 import json
+import io
 import logging.config
 import os
+import sys
+import traceback
 
 from notify import *
 from investor import Investor
@@ -19,6 +22,9 @@ def invest(investor, portfolio=None, orderamnt=25):
         if not p:
             logger.error('Could not create portfolio (%s)' % (portfolio))
 
+    # Get available cash first so we can jump on new loans as soon as they list
+    available_cash = investor.get_cash()
+
     # Find loans meeting filter criteria
     logger.info('Retrieving new loans')
     new_loans = investor.get_new_loans()
@@ -31,15 +37,16 @@ def invest(investor, portfolio=None, orderamnt=25):
             logger.info('1 loan passes filters')
     else:
         logger.info('No new loans pass filters')
+        return
 
     # Purchase as many notes as we can
-    num_loans = int(min(investor.get_cash() / orderamnt, len(new_loans)))
+    num_loans = int(min(available_cash / orderamnt, len(new_loans)))
     if num_loans > 0:
-        if num_loans > 1:
-            logger.info('Placing order with %s loans' % (num_loans))
-        else:
-            logger.info('Placing order with 1 loan')
         investor.submit_order(new_loans[0:num_loans], p)
+        if num_loans > 1:
+            logger.info('Placed order with %s loans' % (num_loans))
+        else:
+            logger.info('Placed order with 1 loan')
 
     # Return only loans we invested in
     return new_loans[:num_loans]
@@ -213,11 +220,11 @@ def _main():
         pass
 
     except:
-        # Send email notification about uncaught exception
-        logger.error('Uncaught exception occurred.')
-
-        # TODO: Send email with backtrace
-
+        # Uncaught exception occurred -- log it
+        tb = sys.exc_info()[2]
+        exception_str = io.StringIO()
+        traceback.print_tb(tb, file=exception_str)
+        logger.error('Uncaught exception occurred:\n%s' % (exception_str.getvalue()))
         raise
 
     return

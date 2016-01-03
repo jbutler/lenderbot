@@ -23,7 +23,7 @@ class Investor:
         self.logger = logging.getLogger(__name__)
         self.time_delay = datetime.timedelta(seconds=1) # We must wait one second between requests
         self.last_request_ts = datetime.datetime.min # No requests have been made yet
-        self.max_log_len = 512
+        self.max_log_len = 1024
         self.filters = []
         self.my_note_ids = [ x['loanId'] for x in self.get_notes_owned() ]
 
