@@ -8,4 +8,5 @@ setup(name='lenderbot',
       author='Joe Butler',
       author_email='joebutler88@gmail.com',
       packages=['investor'],
+      install_requires=['requests', 'pyparsing'],
 )
