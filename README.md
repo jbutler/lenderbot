@@ -1,21 +1,33 @@
 # lenderbot
-Don't waste your time managing your LendingClub account. Set up a set of filters and let `lenderbot` put your spare cash to work.
+Don't be a scrub and manage your own LendingClub account. Retire and drink mimosas on the beach while lenderbot does this crap for you.
 
 [![Build Status](https://travis-ci.org/jbutler/auto-investor.svg?branch=master)](https://travis-ci.org/jbutler/auto-investor)
 
-## Requirements
+## Dependencies
 * Python 3
 * pyparsing
 * requests
 
 ## Installation
-While this package isn't hosted on PyPI, I have included a setup.py script. I'd recommend installing this in a virtual environment instead of cluttering up your system python installation. From your virtualenv, you may install using `pip` or any other package manager relying on `distutils`.
+### Linux
+Set up a virtualenv:
+
+`virtualenv -p python3 <virtual environment>`
+
+Sync down the code, `source` the newly created virtual env, and pip install:
+
+`source <virtual environment>/bin/activate`
+
+`pip install -r requirements.txt`
 
 `pip install /<path>/<to>/<lenderbot>`
 
 Make sure to install the package in Development Mode if you wish to make code changes:
 
 `pip install -e /<path>/<to>/<lenderbot>`
+
+### Windows
+You'll figure it out
 
 ## Command Line Options
 Run `python main.py --help` for the most up to date list of command line options. Currently supported options include:
@@ -28,7 +40,7 @@ Run `python main.py --help` for the most up to date list of command line options
 * `-t`, `--testFilters`: Test loan filters by applying them to all loans currently listed.
 
 ## Configuration
-Account configuration and lending criteria are two pieces that you'll need/want to tweak. There are separate config files for each.
+Put the config files in your home dir under `~/.lenderbot/`. See config in `example_config` for examples.
 
 ### Account configuration
 There are five fields of interest in the account configuration json file (config.json):
@@ -39,28 +51,21 @@ There are five fields of interest in the account configuration json file (config
 * `email` - Email address to send purchase notification to
 
 ### Filters
-This is where `lenderbot` shines. It includes a parser which allows you to write arbitrarily complex filters using multiple loan keys and operators. The available loan keys are defined as part of the LendingClub API. You can find these on the developer section of their webpage.
+This is where `lenderbot` kicks ass. It includes a parser which allows you to write arbitrarily complex filters using multiple loan keys and operators. The available loan keys are defined as part of the LendingClub API. You can find these on the developer section of their webpage.
 
-The filter parser supports (in)equalities as well as basic math functions. The return value of a filter must be a boolean!
+The filter parser supports (in)equalities as well as basic math functions. Make sure it's a boolean filter.
 
 Available operators: `+, -, *, /, %, >, >=, <, <=, ==, !=`
 
 #### Filter Syntax
-It's easiest to illustrate the syntax with some examples. We'll start with a basic one and go from there.
+Just look at the examples and `example_config/rules.json`
 
 ##### Basic Example
 `{term} == 36`
 
-This one is pretty self explanatory, but illustrates how to perform key lookups. `{term}` represents the loan term of whatever loan this filter is applied to. It is replaced at runtime with the appropriate value (only 36 and 60 month loans are available on LendingClub). This filter will restrict your investments to 36 month loans. All others will be discarded.
+This one illustrates how to perform key lookups. Toss anything that's not a 36 month note. Nobody's got time to wait around for 5 years.
 
 ##### More Complicated Example
 `{annualInc} * 0.3 > {loanAmount}`
 
-This filter looks at the borrowers income to decide if the loan amount is appropriate. Specifically, the loan amount must not exceed 30% of their annual income.
-
-#### Filter Types
-There are two types of filters available for use. The above examples are `BasicFilters`. However, it may make more logical sense to define a filter such that loans are discarded when they PASS a filter instead of when they FAIL. These filters are defined as `ExclusionFilters`. While `ExclusionFilters` do not add any flexibility, they're there for you to use. For example, you may find it more intuitive to toss out all loans originating from CA and NJ as `{addrState} == CA` and `{addrState} == NJ` instead of using a `BasicFilter` and saying `{addrState} != CA` and `{addrState] != NJ`. Tomato, tomato. Wait...
-
-#### Filter format
-Now that you're ready to come up with all your badass filters, take a look at rules_template.json for the format.
-
+Income discrimination at its finest.
