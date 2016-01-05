@@ -5,6 +5,7 @@ import sys
 from investor import Investor
 import unittest
 
+
 class InvestorTest(unittest.TestCase):
     def test_dummy_test(self):
         self.assertTrue(True)
@@ -12,4 +13,3 @@ class InvestorTest(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
-from   datetime import datetime
+from datetime import datetime
 import json
 import io
 import logging.config
@@ -13,17 +13,15 @@ from notify import *
 from investor import Investor
 from investor import LoanFilter
 
-
 CONFIG_DIR = os.path.join(os.path.expanduser('~'), '.lenderbot')
 
 
 def invest(investor, portfolio=None, orderamnt=25):
     # Get loan portfolio
-    p = None
     if portfolio:
-        p = investor.get_portfolio(portfolio, create=True)
-        if not p:
-            logger.error('Could not create portfolio (%s)' % (portfolio))
+        portfolio = investor.get_portfolio(portfolio, create=True)
+        if not portfolio:
+            logger.error('Could not create portfolio')
 
     # Get available cash first so we can jump on new loans as soon as they list
     available_cash = investor.get_cash()
@@ -35,7 +33,7 @@ def invest(investor, portfolio=None, orderamnt=25):
     # Log number of loans that pass filters
     if new_loans:
         if len(new_loans) > 1:
-            logger.info('%d loans pass filters' % (len(new_loans)))
+            logger.info('%d loans pass filters', len(new_loans))
         else:
             logger.info('1 loan passes filters')
     else:
@@ -45,9 +43,9 @@ def invest(investor, portfolio=None, orderamnt=25):
     # Purchase as many notes as we can
     num_loans = int(min(available_cash / orderamnt, len(new_loans)))
     if num_loans > 0:
-        investor.submit_order(new_loans[0:num_loans], p)
+        investor.submit_order(new_loans[0:num_loans], portfolio)
         if num_loans > 1:
-            logger.info('Placed order with %s loans' % (num_loans))
+            logger.info('Placed order with %s loans', num_loans)
         else:
             logger.info('Placed order with 1 loan')
 
@@ -62,13 +60,13 @@ def fund_account(investor, min_balance=0, transfer_multiple=25):
 
     # Sum pending transfers amounts
     xfers = investor.get_pending_transfers()
-    pending_xfer_amt = sum([ x['amount'] for x in xfers ])
+    pending_xfer_amt = sum([x['amount'] for x in xfers])
 
     # Transfer additional funds if cash + pending transfers < min_balance
     total_funds = cash + pending_xfer_amt
     if total_funds < min_balance:
         xfer_amt = ((min_balance - total_funds) + (transfer_multiple - .01)) // transfer_multiple * transfer_multiple
-        logger.info('Transfering $%d to meet minimum balance requirement of $%d' % (xfer_amt, min_balance))
+        logger.info('Transfering $%d to meet minimum balance requirement of $%d', xfer_amt, min_balance)
         investor.add_funds(xfer_amt)
 
 
@@ -77,11 +75,11 @@ def note_summary(investor, late_only=False, include_closed=False):
     notes = investor.get_detailed_notes_owned()
 
     # Separate out notes by status
-    current = [ note for note in notes if note.is_current() ]
-    late    = [ note for note in notes if note.is_late() ]
-    opened  = [ note for note in notes if note.is_open() ]
-    closed  = [ note for note in notes if not note.is_open() ]
-    review  = [ note for note in notes if not note.is_issued() ]
+    current = [note for note in notes if note.is_current()]
+    late = [note for note in notes if note.is_late()]
+    opened = [note for note in notes if note.is_open()]
+    closed = [note for note in notes if not note.is_open()]
+    review = [note for note in notes if not note.is_issued()]
 
     summary = ''
     if late_only:
@@ -94,7 +92,7 @@ def note_summary(investor, late_only=False, include_closed=False):
         if include_closed:
             summary_notes += len(closed)
         avg_rate = sum(x['interestRate'] for x in summary_notes) / len(summary_notes)
-        summary  = '%d note(s) owned at an average interest rate of %.2f%%\n' % (len(summary_notes), avg_rate)
+        summary = '%d note(s) owned at an average interest rate of %.2f%%\n' % (len(summary_notes), avg_rate)
         summary += '%d open note(s):\n' % (len(opened))
         summary += '  %d current note(s)\n' % (len(current))
         if include_closed:
@@ -102,7 +100,7 @@ def note_summary(investor, late_only=False, include_closed=False):
         summary += '  %d late note(s)\n' % (len(late))
         summary += '  %d note(s) in review\n' % (len(review))
         grade_summary = '  Grades - '
-        grades = [ 'A', 'B', 'C', 'D', 'E', 'F', 'G' ]
+        grades = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
         for grade in grades:
             grade_summary += '%c: %d  ' % (grade, len([n for n in summary_notes if grade in n['grade']]))
         summary += grade_summary
@@ -113,17 +111,17 @@ def note_summary(investor, late_only=False, include_closed=False):
 def load_filters(rules=os.path.join(CONFIG_DIR, 'rules.json')):
     # Load filter rules from config
     filters = {}
-    with open(rules) as f:
-        filters = json.load(f)
+    with open(rules) as rules_file:
+        filters = json.load(rules_file)
 
     # Initialize filters
     filter_objs = []
     if 'basic' in filters:
-        logger.info('Adding %s basic filter(s)' % (len(filters['basic'])))
+        logger.info('Adding %s basic filter(s)', len(filters['basic']))
         for rule in filters['basic']:
             filter_objs.append(LoanFilter.BasicFilter(rule['filter']))
     if 'exclusions' in filters:
-        logger.info('Adding %s exclusion filter(s)' % (len(filters['exclusions'])))
+        logger.info('Adding %s exclusion filter(s)', len(filters['exclusions']))
         for rule in filters['exclusions']:
             filter_objs.append(LoanFilter.ExclusionFilter(rule['filter']))
 
@@ -133,25 +131,25 @@ def load_filters(rules=os.path.join(CONFIG_DIR, 'rules.json')):
 def load_config(config_file=os.path.join(CONFIG_DIR, 'config.json')):
     # Load and validate config
     config = {}
-    with open(config_file) as f:
-        config = json.load(f)
+    with open(config_file) as cf_handle:
+        config = json.load(cf_handle)
 
     # Account ID and authentication key are required to do anything useful
-    if not 'iid' in config:
+    if 'iid' not in config:
         logger.warning('Investor ID not present in config')
-    if not 'auth' in config:
+    if 'auth' not in config:
         logger.warning('Authentication key not present in config')
 
     # Assume $25 order amount and $0 minimum balance if either are missing
-    if not 'orderamnt' in config:
+    if 'orderamnt' not in config:
         logger.info('Setting default order amount to $25')
         config['orderamnt'] = 25
-    if not 'min_balance' in config:
+    if 'min_balance' not in config:
         logger.info('Setting default minimum balance to $0')
         config['min_balance'] = 0
 
     # Email is required for notifications
-    if not 'email' in config:
+    if 'email' not in config:
         logger.warning('Email is required to receive notifications')
 
     return config
@@ -185,7 +183,10 @@ def _main():
             args.invest = True
 
         # Create investor object
-        i = Investor.Investor(config['iid'], config['auth'], productionMode=args.productionMode)
+        i = Investor.Investor(config['iid'],
+                              config['auth'],
+                              invest_amt=config['orderamnt'],
+                              production_mode=args.productionMode)
         if args.invest or args.testFilters:
             i.add_filters(load_filters())
 
@@ -224,10 +225,10 @@ def _main():
 
     except:
         # Uncaught exception occurred -- log it
-        tb = sys.exc_info()[2]
+        trace_back = sys.exc_info()[2]
         exception_str = io.StringIO()
-        traceback.print_tb(tb, file=exception_str)
-        logger.error('Uncaught exception occurred:\n%s' % (exception_str.getvalue()))
+        traceback.print_tb(trace_back, file=exception_str)
+        logger.error('Uncaught exception occurred:\n%s', exception_str.getvalue())
         raise
 
     return
@@ -238,4 +239,3 @@ if __name__ == '__main__':
     logger = logging.getLogger('investor')
 
     _main()
-

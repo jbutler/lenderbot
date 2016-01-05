@@ -6,34 +6,44 @@ import logging
 from datetime import datetime, timedelta
 from calendar import monthrange
 
+
 class Loan(dict):
-    'A simple class to represent a LendingClub loan. This is a wrapper implementing comparison methods to allow sorting.'
+    """
+    A simple class to represent a LendingClub loan.
+    This is a wrapper implementing comparison methods to allow sorting.
+    """
 
     def __init__(self, *args, **kw):
-        super(Loan,self).__init__(*args, **kw)
+        super(Loan, self).__init__(*args, **kw)
         self.quality = 100
 
     def __setitem__(self, key, value):
         if key == 'quality':
             self.quality = value
         else:
-            super(Loan,self).__setitem__(key, value)
+            super(Loan, self).__setitem__(key, value)
         return
+
     def __getitem__(self, key):
         if key == 'quality':
             return self.quality
-        return super(Loan,self).__getitem__(key)
+        return super(Loan, self).__getitem__(key)
 
     def __lt__(self, other):
         return self.quality < other.quality
+
     def __le__(self, other):
         return self.quality <= other.quality
+
     def __eq__(self, other):
         return self.quality == other.quality
+
     def __nq__(self, other):
         return self.quality != other.quality
+
     def __gt__(self, other):
         return self.quality > other.quality
+
     def __ge__(self, other):
         return self.quality >= other.quality
 
@@ -68,6 +78,7 @@ class OwnedNote(Loan):
         str += 'Interest rate: %.2f\n' % (self['interestRate'])
         str += 'Loan length: %d months\n' % (self['loanLength'])
         return str
+
 
 class DetailedOwnedNote(Loan):
     'Implement string representation for Detailed Owned Notes'
@@ -109,20 +120,17 @@ class PastLoan(Loan):
     'A simple class to represent a historical LendingClub loan.'
 
     def __init__(self, badKey, badVal, *args, **kw):
-        super(PastLoan,self).__init__(*args, **kw)
+        super(PastLoan, self).__init__(*args, **kw)
 
         self._valid = self._sanitize(badKey, badVal)
 
-
     def isValid(self):
         return self._valid
-
 
     def getAge(self):
         if 'loan_age' not in self:
             self['loan_age'] = self._calcAge()
         return self['loan_age']
-
 
     def _calcAge(self):
         # Expects dates to be of the form 'Dec-2015'
@@ -142,7 +150,6 @@ class PastLoan(Loan):
 
         return months
 
-
     def _sanitize(self, badKey, badVal):
         valid = True
 
@@ -161,7 +168,7 @@ class PastLoan(Loan):
                 # If no payment received, last payment date = issue date
                 self['last_pymnt_d'] = self['issue_d']
 
-        for k,v in self.items():
+        for k, v in self.items():
             if badVal == v:
                 logging.debug(badVal)
                 valid = False
@@ -174,8 +181,7 @@ class PastLoan(Loan):
         if not valid:
             logging.debug(self.items())
             # Can't safely access specific keys, other than id, when incorrectly formatted
-            logging.warning ("Fix Loan {}".format(self['id']))
-            logging.warning ("Line {}".format(self['csv_line']))
+            logging.warning("Fix Loan {}".format(self['id']))
+            logging.warning("Line {}".format(self['csv_line']))
 
         return valid
-
