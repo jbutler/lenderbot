@@ -1,7 +1,7 @@
 # lenderbot
 Don't be a scrub and manage your own LendingClub account. Retire and drink mimosas on the beach while lenderbot does this crap for you.
 
-[![Build Status](https://travis-ci.org/jbutler/auto-investor.svg?branch=master)](https://travis-ci.org/jbutler/auto-investor)
+[![Build Status](https://travis-ci.org/jbutler/lenderbot.svg?branch=master)](https://travis-ci.org/jbutler/lenderbot)
 
 ## Dependencies
 * Python 3
