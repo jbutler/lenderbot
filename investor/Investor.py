@@ -141,7 +141,7 @@ class Investor:
             # Portfolio parameter can either be a dictionary or portfolio ID
             portfolio_id = None
             if isinstance(portfolio, dict):
-                portfolio_id = portfolio['portfolio_id']
+                portfolio_id = portfolio['portfolioId']
             elif isinstance(portfolio, str):
                 portfolio_id = portfolio
             elif portfolio is not None:
@@ -151,7 +151,7 @@ class Investor:
             loan_dict = [{'loanId': loan['id'], 'requestedAmount': self.invest_amt} for loan in loans]
             if portfolio_id:
                 for loan in loan_dict:
-                    loan.update({'portfolio_id': portfolio_id})
+                    loan.update({'portfolioId': portfolio_id})
             order = json.dumps({"aid": self.iid, "orders": loan_dict})
             return self.__execute_post('accounts/%s/orders' % (self.iid), payload=order)
         else:
