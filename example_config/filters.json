@@ -1,0 +1,10 @@
+{
+  "filters" : [
+    "{term} == 36",
+    "{grade} >= D",
+    "{grade} < G",
+    "{inqLast6Mths} <= 1",
+    "{purpose} != house"
+  ]
+}
+

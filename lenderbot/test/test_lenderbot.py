@@ -2,11 +2,11 @@
 
 import sys
 
-from investor import Investor
+from lenderbot import lenderbot
 import unittest
 
 
-class InvestorTest(unittest.TestCase):
+class LenderbotTest(unittest.TestCase):
     def test_dummy_test(self):
         self.assertTrue(True)
 

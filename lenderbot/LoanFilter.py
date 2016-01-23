@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from abc import ABCMeta, abstractmethod
-from investor import FilterParser
+from lenderbot import FilterParser
 
 import logging
 import re
@@ -55,16 +55,6 @@ class BasicFilter(LoanFilter):
             return res
 
 
-class ExclusionFilter(BasicFilter):
-    'A simple class to represent a LendingClub exclusion filter. Loans passing this filter will be discarded.'
-
-    def __str__(self):
-        return super(ExclusionFilter, self).__str__()
-
-    def _eval(self, loan, block):
-        return not super(ExclusionFilter, self)._eval(loan, block)
-
-
 if __name__ == '__main__':
     import sys
 
@@ -84,8 +74,6 @@ if __name__ == '__main__':
     filters.append(['loan_b', True, BasicFilter('{paramA} <= 100')])
     filters.append(['loan_c', True, BasicFilter('{paramB} == -1')])
     filters.append(['loan_c', False, BasicFilter('{paramC} != CSCI')])
-    filters.append(['loan_a', False, ExclusionFilter('{paramA} > 25')])
-    filters.append(['loan_d', False, ExclusionFilter('{paramA} < D')])
 
     # Execute tests
     fail_count = 0
