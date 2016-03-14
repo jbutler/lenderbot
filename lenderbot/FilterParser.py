@@ -23,7 +23,8 @@ __version__ = '11.7.17'
 # of the parsed tokens.
 
 from pyparsing import Word, nums, alphas, Combine, oneOf, Optional, \
-    opAssoc, operatorPrecedence
+    opAssoc, operatorPrecedence, ParserElement
+ParserElement.enablePackrat() # Add memoization to parsing logic to increase performance
 
 class EvalConstant():
     "Class to evaluate a parsed constant or variable"
