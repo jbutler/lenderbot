@@ -1,8 +1,6 @@
 # lenderbot
 Automated tool for managing your LendingClub account. Unlike other tools which serve similar purposes, lenderbot supports advanced filtering capabilities and has been optimized to ensure you never miss out on the loans you're interested in.
 
-[![Build Status](https://travis-ci.org/jbutler/lenderbot.svg?branch=master)](https://travis-ci.org/jbutler/lenderbot)
-
 ## Dependencies
 * Python 3
 * pyparsing
