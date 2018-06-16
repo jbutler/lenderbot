@@ -1,5 +1,5 @@
 # lenderbot
-Don't be a scrub and manage your own LendingClub account. Retire and drink mimosas on the beach while lenderbot does this crap for you.
+Automated tool for managing your LendingClub account. Unlike other tools which serve similar purposes, lenderbot supports advanced filtering capabilities and has been optimized to ensure you never miss out on the loans you're interested in.
 
 [![Build Status](https://travis-ci.org/jbutler/lenderbot.svg?branch=master)](https://travis-ci.org/jbutler/lenderbot)
 
@@ -57,8 +57,4 @@ The filter parser supports (in)equalities as well as basic math functions. Make 
 Available operators: `+, -, *, /, %, >, >=, <, <=, ==, !=`
 
 #### Filter Syntax
-Just look at the examples and `example_config/filters.json`
-
-##### Examples
-`{term} == 36`
-`{annualInc} * 0.3 > {loanAmount}`
+Look at `example_config/filters.json`
